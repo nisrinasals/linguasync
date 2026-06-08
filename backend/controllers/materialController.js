@@ -1,4 +1,4 @@
-const { Material, Language } = require("../models");
+const { Material, Language, sequelize } = require("../models");
 
 const materialController = {
   getMaterialsByLanguage: async (req, res) => {
@@ -65,30 +65,37 @@ const materialController = {
   },
 
   createMaterial: async (req, res) => {
+    const t = await sequelize.transaction();
     try {
       const { language_id, title, content, order } = req.body;
 
-      const languageExists = await Language.findByPk(language_id);
+      const languageExists = await Language.findByPk(language_id, { transaction: t });
       if (!languageExists) {
+        await t.rollback();
         return res.status(404).json({
           status: "fail",
           message: "ID Bahasa induk tidak terdaftar.",
         });
       }
 
-      const newMaterial = await Material.create({
-        language_id,
-        title,
-        content,
-        order,
-      });
+      const newMaterial = await Material.create(
+        {
+          language_id,
+          title,
+          content,
+          order,
+        },
+        { transaction: t },
+      );
 
+      await t.commit();
       return res.status(201).json({
         status: "success",
         message: "Materi pembelajaran baru berhasil ditambahkan.",
         data: newMaterial,
       });
     } catch (error) {
+      await t.rollback();
       return res.status(500).json({
         status: "error",
         message: "Gagal menambahkan entitas materi.",
@@ -98,26 +105,29 @@ const materialController = {
   },
 
   updateMaterial: async (req, res) => {
+    const t = await sequelize.transaction();
     try {
       const { id } = req.params;
       const { title, content, order } = req.body;
 
-      const material = await Material.findByPk(id);
+      const material = await Material.findByPk(id, { transaction: t });
       if (!material) {
+        await t.rollback();
         return res.status(404).json({
           status: "fail",
           message: "Materi yang akan diperbarui tidak ditemukan.",
         });
       }
 
-      await material.update({ title, content, order });
-
+      await material.update({ title, content, order }, { transaction: t });
+      await t.commit();
       return res.status(200).json({
         status: "success",
         message: "Data materi pembelajaran berhasil diperbarui.",
         data: material,
       });
     } catch (error) {
+      await t.rollback();
       return res.status(500).json({
         status: "error",
         message: "Gagal memperbarui data materi.",
@@ -127,24 +137,27 @@ const materialController = {
   },
 
   deleteMaterial: async (req, res) => {
+    const t = await sequelize.transaction();
     try {
       const { id } = req.params;
 
-      const material = await Material.findByPk(id);
+      const material = await Material.findByPk(id, { transaction: t });
       if (!material) {
+        await t.rollback();
         return res.status(404).json({
           status: "fail",
           message: "Materi yang akan dihapus tidak ditemukan.",
         });
       }
 
-      await material.destroy();
-
+      await material.destroy({ transaction: t });
+      await t.commit();
       return res.status(200).json({
         status: "success",
         message: "Materi berhasil dihapus dari sistem.",
       });
     } catch (error) {
+      await t.rollback();
       return res.status(500).json({
         status: "error",
         message: "Gagal memproses penghapusan materi.",
