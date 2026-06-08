@@ -3,7 +3,7 @@ const router = express.Router();
 
 const languageController = require("../controllers/languageController");
 const { authenticateToken, isAdmin } = require("../middleware/authMiddleware");
-const languageValidator = require("../middleware/validator/languageValidator");
+const { languageValidation, enrollValidation } = require("../middleware/validator/languageValidator");
 
 // Student Network Endpoints
 router.get("/", authenticateToken, languageController.exploreLanguages);

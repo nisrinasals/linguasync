@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { sequelize } = require("./models");
+const db = require("./models");
 
 const authRoutes = require("./routes/auth");
 const languageRoutes = require("./routes/languages");
@@ -39,11 +39,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-sequelize
+db.sequelize
   .authenticate()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`LinguaSync API Gateway is running on port ${PORT}`);
+      console.log(`LinguaSync API Gateway is running on http://localhost:${PORT}`);
     });
   })
   .catch((err) => {

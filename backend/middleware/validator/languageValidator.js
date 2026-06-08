@@ -1,5 +1,5 @@
 const { body, validationResult } = require("express-validator");
-const { Language } = require("../models");
+const { Language } = require("../../models");
 const { Op } = require("sequelize");
 
 const validate = (req, res, next) => {

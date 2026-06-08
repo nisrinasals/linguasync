@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const quizController = require("../controllers/quizController");
-const { authenticateToken, isAdmin } = require("../middlewares/authMiddleware");
-const { submitValidation, questionValidation } = require("../middlewares/quizValidator");
+const { authenticateToken, isAdmin } = require("../middleware/authMiddleware");
+const { submitValidation, questionValidation } = require("../middleware/validator/quizValidator");
 
 router.get("/", authenticateToken, quizController.getQuestionsByLanguage);
 router.post("/submit", authenticateToken, submitValidation, quizController.submitQuizResult);
