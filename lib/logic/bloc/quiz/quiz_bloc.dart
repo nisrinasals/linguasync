@@ -18,6 +18,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     on<CreateQuizQuestionRequested>(_onCreateQuizQuestionRequested);
     on<UpdateQuizQuestionRequested>(_onUpdateQuizQuestionRequested);
     on<DeleteQuizQuestionRequested>(_onDeleteQuizQuestionRequested);
+    on<ResetQuizData>(_onResetQuizData);
   }
 
   Future<void> _onStartQuiz(StartQuiz event, Emitter<QuizState> emit) async {
@@ -207,6 +208,10 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     } catch (e) {
       emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
     }
+  }
+
+  void _onResetQuizData(ResetQuizData event, Emitter<QuizState> emit) {
+    emit(QuizInitial());
   }
 
   @override

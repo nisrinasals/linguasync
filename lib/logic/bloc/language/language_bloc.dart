@@ -15,6 +15,7 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
     on<CreateLanguageRequested>(_onCreateLanguageRequested);
     on<UpdateLanguageRequested>(_onUpdateLanguageRequested);
     on<DeleteLanguageRequested>(_onDeleteLanguageRequested);
+    on<ResetLanguageData>(_onResetLanguageData);
   }
 
   Future<void> _onFetchLanguages(
@@ -200,5 +201,12 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
     } catch (e) {
       emit(LanguageFailure(error: e.toString().replaceAll('Exception: ', '')));
     }
+  }
+
+  void _onResetLanguageData(
+    ResetLanguageData event,
+    Emitter<LanguageState> emit,
+  ) {
+    emit(LanguageInitial());
   }
 }

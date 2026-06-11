@@ -19,7 +19,7 @@ const materialController = {
         where: { language_id },
         limit,
         offset,
-        order: [["order", "ASC"]],
+        order: [["order_index", "ASC"]],
       });
 
       return res.status(200).json({
@@ -34,8 +34,7 @@ const materialController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat daftar materi pembelajaran.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -59,8 +58,7 @@ const materialController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat rincian materi.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -78,12 +76,25 @@ const materialController = {
         });
       }
 
+      const existingOrder = await Material.findOne({
+        where: { language_id, order_index: order },
+        transaction: t,
+      });
+
+      if (existingOrder) {
+        await t.rollback();
+        return res.status(400).json({
+          status: "fail",
+          message: `Urutan materi ${order} sudah digunakan. Silakan pilih urutan lain.`,
+        });
+      }
+
       const newMaterial = await Material.create(
         {
           language_id,
           title,
           content,
-          order,
+          order_index: order,
         },
         { transaction: t },
       );
@@ -99,8 +110,7 @@ const materialController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal menambahkan entitas materi.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -119,7 +129,20 @@ const materialController = {
         });
       }
 
-      await material.update({ title, content, order }, { transaction: t });
+      const existingOrder = await Material.findOne({
+        where: { language_id: material.language_id, order_index: order },
+        transaction: t,
+      });
+
+      if (existingOrder && existingOrder.id !== material.id) {
+        await t.rollback();
+        return res.status(400).json({
+          status: "fail",
+          message: `Urutan materi ${order} sudah digunakan. Silakan pilih urutan lain.`,
+        });
+      }
+
+      await material.update({ title, content, order_index: order }, { transaction: t });
       await t.commit();
       return res.status(200).json({
         status: "success",
@@ -131,8 +154,7 @@ const materialController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memperbarui data materi.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -161,8 +183,7 @@ const materialController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memproses penghapusan materi.",
-        error: error.message,
-      });
+        });
     }
   },
 };

@@ -25,8 +25,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat pertanyaan kuis.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -65,8 +64,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal menyimpan hasil kuis ke database.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -103,8 +101,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat bank soal kuis.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -126,11 +123,12 @@ const quizController = {
         {
           language_id,
           question,
-          opt_a,
-          opt_b,
-          opt_c,
-          opt_d,
-          answer,
+          option_a: opt_a,
+          option_b: opt_b,
+          option_c: opt_c,
+          option_d: opt_d,
+          correct_answer: answer.toLowerCase(),
+          duration: 10,
         },
         { transaction: t },
       );
@@ -146,8 +144,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal menambahkan pertanyaan kuis.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -166,7 +163,15 @@ const quizController = {
         });
       }
 
-      await quizQuestion.update({ question, opt_a, opt_b, opt_c, opt_d, answer }, { transaction: t });
+      await quizQuestion.update({ 
+        question, 
+        option_a: opt_a, 
+        option_b: opt_b, 
+        option_c: opt_c, 
+        option_d: opt_d, 
+        correct_answer: answer.toLowerCase(),
+        duration: 10 
+      }, { transaction: t });
       await t.commit();
       return res.status(200).json({
         status: "success",
@@ -178,8 +183,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memperbarui data kuis.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -208,8 +212,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memproses penghapusan data kuis.",
-        error: error.message,
-      });
+        });
     }
   },
 };

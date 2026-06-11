@@ -18,20 +18,37 @@ const languageController = {
         order: [["name", "ASC"]],
       });
 
+      const userId = req.user ? req.user.id : null;
+      
+      const languagesWithEnrollment = await Promise.all(
+        rows.map(async (lang) => {
+          let isEnrolled = false;
+          if (userId) {
+            const enrollment = await Enrollment.findOne({
+              where: { user_id: userId, language_id: lang.id },
+            });
+            isEnrolled = !!enrollment;
+          }
+          return {
+            ...lang.toJSON(),
+            is_enrolled: isEnrolled,
+          };
+        })
+      );
+
       return res.status(200).json({
         status: "success",
         page,
         limit,
         totalItems: count,
         totalPages: Math.ceil(count / limit),
-        data: rows,
+        data: languagesWithEnrollment,
       });
     } catch (error) {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat data eksplorasi bahasa.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -82,8 +99,7 @@ const languageController = {
       return res.status(500).json({
         status: "error",
         message: "Terjadi kesalahan sistem saat memproses enrollment.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -118,8 +134,7 @@ const languageController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat daftar studi pribadi Anda.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -153,8 +168,7 @@ const languageController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memproses penghapusan daftar studi.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -174,8 +188,7 @@ const languageController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal menambahkan bahasa baru.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -206,8 +219,7 @@ const languageController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memperbarui data bahasa.",
-        error: error.message,
-      });
+        });
     }
   },
 
@@ -237,8 +249,7 @@ const languageController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal menghapus entitas data bahasa.",
-        error: error.message,
-      });
+        });
     }
   },
 };

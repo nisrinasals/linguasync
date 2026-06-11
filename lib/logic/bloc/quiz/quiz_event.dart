@@ -108,3 +108,5 @@ class DeleteQuizQuestionRequested extends QuizEvent {
   @override
   List<Object?> get props => [id];
 }
+
+class ResetQuizData extends QuizEvent {}

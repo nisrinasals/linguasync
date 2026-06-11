@@ -40,8 +40,7 @@ const historyController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal mengambil data riwayat kuis Anda.",
-        error: error.message,
-      });
+        });
     }
   },
 };

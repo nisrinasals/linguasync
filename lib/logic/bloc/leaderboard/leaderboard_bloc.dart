@@ -7,8 +7,10 @@ import 'leaderboard_state.dart';
 class LeaderboardBloc extends Bloc<LeaderboardEvent, LeaderboardState> {
   final LeaderboardRepository leaderboardRepository;
 
-  LeaderboardBloc({required this.leaderboardRepository}) : super(LeaderboardInitial()) {
+  LeaderboardBloc({required this.leaderboardRepository})
+      : super(LeaderboardInitial()) {
     on<FetchLeaderboard>(_onFetchLeaderboard);
+    on<ResetLeaderboardData>(_onResetLeaderboardData);
   }
 
   Future<void> _onFetchLeaderboard(FetchLeaderboard event, Emitter<LeaderboardState> emit) async {
@@ -51,5 +53,9 @@ class LeaderboardBloc extends Bloc<LeaderboardEvent, LeaderboardState> {
         emit(LeaderboardFailure(error: e.toString().replaceAll('Exception: ', '')));
       }
     }
+  }
+
+  void _onResetLeaderboardData(ResetLeaderboardData event, Emitter<LeaderboardState> emit) {
+    emit(LeaderboardInitial());
   }
 }

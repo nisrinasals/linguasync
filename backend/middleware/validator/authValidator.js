@@ -16,22 +16,13 @@ const validate = (req, res, next) => {
 
 const authValidator = {
   registerValidation: [
-    body("name").trim().notEmpty().withMessage("Full name is required."),
-    body("email").trim().notEmpty().withMessage("Email is required.").isEmail().withMessage("Invalid email format."),
-    body("password").notEmpty().withMessage("Password is required.").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long."),
-    body("confirmPassword")
-      .notEmpty()
-      .withMessage("Confirmation password is required.")
-      .custom((value, { req }) => {
-        if (value !== req.body.password) {
-          throw new Error("Passwords do not match.");
-        }
-        return true;
-      }),
+    body("name").trim().notEmpty().withMessage("Nama lengkap wajib diisi."),
+    body("email").trim().notEmpty().withMessage("Email wajib diisi.").isEmail().withMessage("Format email tidak valid."),
+    body("password").notEmpty().withMessage("Password wajib diisi.").isLength({ min: 6 }).withMessage("Password harus terdiri dari minimal 6 karakter."),
     validate,
   ],
 
-  loginValidation: [body("email").trim().notEmpty().withMessage("Email is required.").isEmail().withMessage("Invalid email format."), body("password").notEmpty().withMessage("Password is required."), validate],
+  loginValidation: [body("email").trim().notEmpty().withMessage("Email wajib diisi.").isEmail().withMessage("Format email tidak valid."), body("password").notEmpty().withMessage("Password wajib diisi."), validate],
 };
 
 module.exports = authValidator;

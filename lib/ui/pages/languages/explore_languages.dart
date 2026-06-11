@@ -69,8 +69,23 @@ class _ExploreLanguagePageState extends State<ExploreLanguagePage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
+      body: BlocListener<LanguageBloc, LanguageState>(
+        listener: (context, state) {
+          if (state is LanguageOperationSuccess) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+            BlocProvider.of<LanguageBloc>(
+              context,
+            ).add(const FetchLanguages(isRefresh: true));
+          } else if (state is LanguageFailure) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.error)));
+          }
+        },
+        child: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -146,6 +161,7 @@ class _ExploreLanguagePageState extends State<ExploreLanguagePage> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

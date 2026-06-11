@@ -18,12 +18,11 @@ const leaderboardController = {
         )
       )`;
 
-      const { count } = await QuizHistory.findAndCountAll({
+      const uniqueUsers = await QuizHistory.findAll({
+        attributes: [[sequelize.fn('DISTINCT', sequelize.col('user_id')), 'user_id']],
         where: { id: { [Op.in]: sequelize.literal(latestSubquery) } },
-        group: ["user_id"],
       });
-
-      const totalUniqueUsers = count.length;
+      const totalUniqueUsers = uniqueUsers.length;
 
       const rows = await QuizHistory.findAll({
         attributes: ["user_id", [sequelize.fn("SUM", sequelize.col("score")), "totalScore"]],
@@ -81,8 +80,7 @@ const leaderboardController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat papan peringkat global.",
-        error: error.message,
-      });
+        });
     }
   },
 };

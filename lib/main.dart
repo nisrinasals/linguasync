@@ -8,17 +8,23 @@ import 'package:linguasync/data/repositories/quiz_repository.dart';
 import 'package:linguasync/data/repositories/leaderboard_repository.dart';
 import 'package:linguasync/data/repositories/history_repository.dart';
 import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
+import 'package:linguasync/logic/bloc/auth/auth_state.dart';
 import 'package:linguasync/logic/bloc/language/language_bloc.dart';
+import 'package:linguasync/logic/bloc/language/language_event.dart';
 import 'package:linguasync/logic/bloc/material/material_bloc.dart';
 import 'package:linguasync/logic/bloc/quiz/quiz_bloc.dart';
+import 'package:linguasync/logic/bloc/quiz/quiz_event.dart';
 import 'package:linguasync/logic/bloc/leaderboard/leaderboard_bloc.dart';
+import 'package:linguasync/logic/bloc/leaderboard/leaderboard_event.dart';
 import 'package:linguasync/logic/bloc/history/history_bloc.dart';
+import 'package:linguasync/logic/bloc/history/history_event.dart';
 import 'package:linguasync/logic/debug/bloc_observer.dart';
 import 'package:linguasync/ui/pages/auth/splash_page.dart';
 import 'package:linguasync/ui/pages/auth/login_page.dart';
 import 'package:linguasync/ui/pages/auth/register_page.dart';
 import 'package:linguasync/ui/pages/languages/explore_languages.dart';
 import 'package:linguasync/ui/pages/languages/my_study_page.dart';
+import 'package:linguasync/ui/pages/main_navigation_page.dart';
 import 'package:linguasync/ui/pages/languages/admin_manage_language_page.dart';
 import 'package:linguasync/ui/pages/leaderboard/global_leaderboard_page.dart';
 import 'package:linguasync/ui/pages/history/user_history_page.dart';
@@ -92,18 +98,27 @@ class LinguaSyncApp extends StatelessWidget {
             ),
           ),
         ],
-        child: MaterialApp(
-          title: 'LinguaSync',
+        child: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is Unauthenticated) {
+              context.read<LanguageBloc>().add(ResetLanguageData());
+              context.read<QuizBloc>().add(ResetQuizData());
+              context.read<LeaderboardBloc>().add(ResetLeaderboardData());
+              context.read<HistoryBloc>().add(ResetHistoryData());
+            }
+          },
+          child: MaterialApp(
+            title: 'LinguaSync',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            primaryColor: const Color(0xFF2C3E50),
-            scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+            primaryColor: const Color(0xFF6B705C),
+            scaffoldBackgroundColor: const Color(0xFFFAF9F6),
             appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.white,
+              backgroundColor: Color(0xFFFAF9F6),
               elevation: 0,
-              iconTheme: IconThemeData(color: Color(0xFF2C3E50)),
+              iconTheme: IconThemeData(color: Color(0xFF333333)),
               titleTextStyle: TextStyle(
-                color: Color(0xFF2C3E50),
+                color: Color(0xFF333333),
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -115,6 +130,7 @@ class LinguaSyncApp extends StatelessWidget {
             '/': (context) => const SplashPage(),
             '/login': (context) => const LoginPage(),
             '/register': (context) => const RegisterPage(),
+            '/main': (context) => const MainNavigationPage(),
             '/explore-language': (context) => const ExploreLanguagePage(),
             '/my-study': (context) => const MyStudyPage(),
             '/leaderboard': (context) => const GlobalLeaderboardPage(),
@@ -123,6 +139,7 @@ class LinguaSyncApp extends StatelessWidget {
             '/admin-manage-language': (context) => const AdminManageLanguagePage(),
           },
         ),
+      ),
       ),
     );
   }

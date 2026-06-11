@@ -24,11 +24,11 @@ class QuizModel {
       id: json['id'] as int,
       languageId: json['language_id'] as int,
       question: json['question'] as String,
-      optA: json['opt_a'] as String,
-      optB: json['opt_b'] as String,
-      optC: json['opt_c'] as String,
-      optD: json['opt_d'] as String,
-      answer: json['answer'] as String,
+      optA: (json['option_a'] ?? json['opt_a']) as String,
+      optB: (json['option_b'] ?? json['opt_b']) as String,
+      optC: (json['option_c'] ?? json['opt_c']) as String,
+      optD: (json['option_d'] ?? json['opt_d']) as String,
+      answer: (json['correct_answer'] ?? json['answer']) as String,
     );
   }
 

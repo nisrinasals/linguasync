@@ -40,7 +40,7 @@ class LanguageCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C3E50),
+                  backgroundColor: language.isEnrolled ? Colors.grey[400] : const Color(0xFF2C3E50),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 8,
@@ -49,11 +49,11 @@ class LanguageCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: onButtonPressed,
+                onPressed: language.isEnrolled ? null : onButtonPressed,
                 child: Text(
-                  buttonText,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  language.isEnrolled ? 'Telah Diikuti' : buttonText,
+                  style: TextStyle(
+                    color: language.isEnrolled ? Colors.grey[200] : Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

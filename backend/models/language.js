@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(models.Material, { foreignKey: "language_id", onDelete: "CASCADE" });
       this.hasMany(models.Quiz, { foreignKey: "language_id", onDelete: "CASCADE" });
       this.hasMany(models.Enrollment, { foreignKey: "language_id", onDelete: "CASCADE" });
+      this.hasMany(models.QuizHistory, { foreignKey: "language_id", onDelete: "CASCADE" });
     }
   }
   Language.init(

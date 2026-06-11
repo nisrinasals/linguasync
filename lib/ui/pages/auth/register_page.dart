@@ -47,7 +47,7 @@ class _RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Color(0xFF2C3E50)),
+        iconTheme: const IconThemeData(color: Color(0xFF333333)),
       ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -60,7 +60,7 @@ class _RegisterPageState extends State<RegisterPage> {
             if (state.user.role == 'admin') {
               Navigator.pushReplacementNamed(context, '/admin-dashboard');
             } else {
-              Navigator.pushReplacementNamed(context, '/explore-language');
+              Navigator.pushReplacementNamed(context, '/main');
             }
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(
@@ -84,7 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
+                      color: Color(0xFF333333),
                     ),
                   ),
                   const SizedBox(height: 8),

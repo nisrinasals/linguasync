@@ -15,7 +15,7 @@ const authController = {
       if (existingUser) {
         return res.status(400).json({
           status: "fail",
-          message: "Email is already registered.",
+          message: "Email sudah terdaftar. Silakan gunakan email lain.",
         });
       }
 
@@ -30,19 +30,18 @@ const authController = {
 
       return res.status(201).json({
         status: "success",
-        message: "Account successfully registered. Please proceed to login.",
+        message: "Akun berhasil didaftarkan. Silakan login.",
       });
     } catch (error) {
       if (error.name === "SequelizeUniqueConstraintError") {
         return res.status(400).json({
           status: "fail",
-          message: "Email already registered. Please use another Email.",
+          message: "Email sudah terdaftar. Silakan gunakan email lain.",
         });
       }
       return res.status(500).json({
         status: "error",
-        message: "Terjadi kesalahan pada server",
-        error: error.message,
+        message: "Terjadi kesalahan internal pada server.",
       });
     }
   },
@@ -57,7 +56,7 @@ const authController = {
       if (!user) {
         return res.status(401).json({
           status: "fail",
-          message: "Invalid email or password.",
+          message: "Email atau password salah.",
         });
       }
 
@@ -65,7 +64,7 @@ const authController = {
       if (!isPasswordValid) {
         return res.status(401).json({
           status: "fail",
-          message: "Invalid email or password.",
+          message: "Email atau password salah.",
         });
       }
 
@@ -78,7 +77,7 @@ const authController = {
 
       return res.status(200).json({
         status: "success",
-        message: "Authentication successful.",
+        message: "Autentikasi berhasil.",
         data: {
           token,
           user: {
@@ -92,8 +91,7 @@ const authController = {
     } catch (error) {
       return res.status(500).json({
         status: "error",
-        message: "An internal server error occurred during authentication.",
-        error: error.message,
+        message: "Terjadi kesalahan internal pada server.",
       });
     }
   },

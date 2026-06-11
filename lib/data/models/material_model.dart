@@ -19,7 +19,7 @@ class MaterialModel {
       languageId: json['language_id'] as int,
       title: json['title'] as String,
       content: json['content'] as String,
-      order: json['order'] as int,
+      order: json['order_index'] ?? json['order'] as int,
     );
   }
 
@@ -29,7 +29,7 @@ class MaterialModel {
       'language_id': languageId,
       'title': title,
       'content': content,
-      'order': order,
+      'order_index': order,
     };
   }
 }

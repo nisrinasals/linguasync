@@ -36,7 +36,18 @@ class _CustomTextFieldState extends State<CustomTextField> {
       decoration: InputDecoration(
         labelText: widget.label,
         alignLabelWithHint: widget.maxLines > 1,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFDDBEA9), width: 2),
+        ),
         suffixIcon: widget.isPassword
             ? IconButton(
                 icon: Icon(

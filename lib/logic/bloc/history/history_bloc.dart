@@ -9,6 +9,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
 
   HistoryBloc({required this.historyRepository}) : super(HistoryInitial()) {
     on<FetchHistory>(_onFetchHistory);
+    on<ResetHistoryData>(_onResetHistoryData);
   }
 
   Future<void> _onFetchHistory(FetchHistory event, Emitter<HistoryState> emit) async {
@@ -47,5 +48,9 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
         emit(HistoryFailure(error: e.toString().replaceAll('Exception: ', '')));
       }
     }
+  }
+
+  void _onResetHistoryData(ResetHistoryData event, Emitter<HistoryState> emit) {
+    emit(HistoryInitial());
   }
 }

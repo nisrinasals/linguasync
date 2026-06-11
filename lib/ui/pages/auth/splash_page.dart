@@ -27,7 +27,7 @@ class _SplashPageState extends State<SplashPage> {
             if (state.user.role == 'admin') {
               Navigator.pushReplacementNamed(context, '/admin-dashboard');
             } else {
-              Navigator.pushReplacementNamed(context, '/explore-language');
+              Navigator.pushReplacementNamed(context, '/main');
             }
           } else if (state is Unauthenticated) {
             Navigator.pushReplacementNamed(context, '/login');

@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
             if (state.user.role == 'admin') {
               Navigator.pushReplacementNamed(context, '/admin-dashboard');
             } else {
-              Navigator.pushReplacementNamed(context, '/explore-language');
+              Navigator.pushReplacementNamed(context, '/main');
             }
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(
@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
+                      color: Color(0xFF333333),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text(
                           'Daftar Sekarang',
                           style: TextStyle(
-                            color: Color(0xFF2C3E50),
+                            color: Color(0xFF333333),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

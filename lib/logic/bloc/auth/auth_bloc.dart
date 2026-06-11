@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/models/auth_model.dart';
 import 'auth_event.dart';
@@ -16,12 +17,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
     try {
+      // Tunggu minimal 2 detik untuk efek splash screen
+      await Future.delayed(const Duration(seconds: 2));
+
       final token = await authRepository.storageProvider.readToken();
       final role = await authRepository.storageProvider.readRole();
 
       if (token != null && role != null) {
-        final dummyUser = UserModel(id: 0, name: '', email: '', role: role);
-        emit(Authenticated(user: dummyUser));
+        // Cek apakah token kedaluwarsa secara lokal
+        bool isExpired = JwtDecoder.isExpired(token);
+        if (isExpired) {
+          // Token expired, hapus dari storage & paksa login ulang
+          await authRepository.storageProvider.clearAuthData();
+          emit(Unauthenticated());
+        } else {
+          final dummyUser = UserModel(id: 0, name: '', email: '', role: role);
+          emit(Authenticated(user: dummyUser));
+        }
       } else {
         emit(Unauthenticated());
       }

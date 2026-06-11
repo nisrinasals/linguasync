@@ -6,6 +6,12 @@ abstract class BaseRepository {
     if (response.statusCode >= 400) {
       try {
         final data = jsonDecode(response.body);
+        if (data['errors'] != null && data['errors'] is List) {
+          final errorList = data['errors'] as List;
+          final errorMessages = errorList.map((e) => e['message']).join('\n');
+          throw Exception(errorMessages);
+        }
+        
         throw Exception(
           data['message'] ?? 'Terjadi kesalahan sistem jaringan.',
         );

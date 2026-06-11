@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -33,11 +35,18 @@ class StorageProvider {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
-    return await http.post(
-      Uri.parse('$baseUrl$endpoint'),
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    try {
+      return await http.post(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 10));
+    } catch (e) {
+      if (e is SocketException || e is TimeoutException || e.toString().contains('Connection refused')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi Anda.');
+      }
+      rethrow;
+    }
   }
 
   Future<http.Response> get(String endpoint) async {
@@ -46,7 +55,14 @@ class StorageProvider {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
-    return await http.get(Uri.parse('$baseUrl$endpoint'), headers: headers);
+    try {
+      return await http.get(Uri.parse('$baseUrl$endpoint'), headers: headers).timeout(const Duration(seconds: 10));
+    } catch (e) {
+      if (e is SocketException || e is TimeoutException || e.toString().contains('Connection refused')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi Anda.');
+      }
+      rethrow;
+    }
   }
 
   Future<http.Response> put(String endpoint, Map<String, dynamic> body) async {
@@ -55,11 +71,18 @@ class StorageProvider {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
-    return await http.put(
-      Uri.parse('$baseUrl$endpoint'),
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    try {
+      return await http.put(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 10));
+    } catch (e) {
+      if (e is SocketException || e is TimeoutException || e.toString().contains('Connection refused')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi Anda.');
+      }
+      rethrow;
+    }
   }
 
   Future<http.Response> delete(String endpoint) async {
@@ -68,6 +91,13 @@ class StorageProvider {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
-    return await http.delete(Uri.parse('$baseUrl$endpoint'), headers: headers);
+    try {
+      return await http.delete(Uri.parse('$baseUrl$endpoint'), headers: headers).timeout(const Duration(seconds: 10));
+    } catch (e) {
+      if (e is SocketException || e is TimeoutException || e.toString().contains('Connection refused')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi Anda.');
+      }
+      rethrow;
+    }
   }
 }

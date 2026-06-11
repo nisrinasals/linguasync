@@ -15,3 +15,5 @@ class FetchLeaderboard extends LeaderboardEvent {
   @override
   List<Object?> get props => [isRefresh];
 }
+
+class ResetLeaderboardData extends LeaderboardEvent {}

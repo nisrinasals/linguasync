@@ -32,20 +32,14 @@ module.exports = {
       name: "idx_enrollments_user_lang",
     });
 
-    // --- 6. TABEL quiz_history ---
+    // --- 6. TABEL quizhistories ---
     // Index untuk riwayat pribadi
-    await queryInterface.addIndex("QuizHistories", ["user_id"], {
-      name: "idx_quizhistories_user",
+    await queryInterface.addIndex("QuizHistories", ["user_id", "quiz_id"], {
+      name: "idx_quizhistories_user_quiz",
     });
-
-    // Composite Index untuk Leaderboard (Logic Latest Score)
+    // Index untuk Leaderboard aggregation (Sesuai REQ-LEAD-07)
     await queryInterface.addIndex("QuizHistories", ["user_id", "quiz_id", "createdAt"], {
       name: "idx_leaderboard_latest",
-    });
-
-    // Index score untuk sorting
-    await queryInterface.addIndex("QuizHistories", ["score"], {
-      name: "idx_quizhistories_score",
     });
   },
 
@@ -57,8 +51,7 @@ module.exports = {
     await queryInterface.removeIndex("Materials", "idx_materials_order");
     await queryInterface.removeIndex("Quizzes", "idx_quizzes_lang");
     await queryInterface.removeIndex("Enrollments", "idx_enrollments_user_lang");
-    await queryInterface.removeIndex("QuizHistories", "idx_quizhistories_user");
+    await queryInterface.removeIndex("QuizHistories", "idx_quizhistories_user_quiz");
     await queryInterface.removeIndex("QuizHistories", "idx_leaderboard_latest");
-    await queryInterface.removeIndex("QuizHistories", "idx_quizhistories_score");
   },
 };

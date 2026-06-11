@@ -15,3 +15,5 @@ class FetchHistory extends HistoryEvent {
   @override
   List<Object?> get props => [isRefresh];
 }
+
+class ResetHistoryData extends HistoryEvent {}

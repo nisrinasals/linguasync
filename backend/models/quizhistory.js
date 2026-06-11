@@ -11,16 +11,22 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       QuizHistory.belongsTo(models.User, { foreignKey: 'user_id' });
-      QuizHistory.belongsTo(models.Quiz, { foreignKey: 'quiz_id' });
+      QuizHistory.belongsTo(models.Language, { foreignKey: 'language_id' });
     }
   }
   QuizHistory.init({
     user_id: DataTypes.INTEGER,
-    quiz_id: DataTypes.INTEGER,
+    language_id: DataTypes.INTEGER,
     score: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'QuizHistory',
+    indexes: [
+      {
+        name: 'idx_leaderboard_latest',
+        fields: ['user_id', 'language_id', 'createdAt']
+      }
+    ]
   });
   return QuizHistory;
 };

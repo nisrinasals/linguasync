@@ -80,3 +80,5 @@ class DeleteLanguageRequested extends LanguageEvent {
   @override
   List<Object?> get props => [id];
 }
+
+class ResetLanguageData extends LanguageEvent {}

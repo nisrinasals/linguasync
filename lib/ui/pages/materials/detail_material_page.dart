@@ -4,6 +4,7 @@ import '../../../../logic/bloc/material/material_bloc.dart';
 import '../../../../logic/bloc/material/material_event.dart';
 import '../../../../logic/bloc/material/material_state.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../pages/quiz/quiz_play_page.dart';
 
 class DetailMaterialPage extends StatefulWidget {
   final int languageId;
@@ -128,7 +129,33 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Materi ${widget.languageName}')),
+      appBar: AppBar(
+        title: Text('Materi ${widget.languageName}'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: TextButton.icon(
+              icon: const Icon(Icons.quiz, color: Colors.white, size: 18),
+              label: const Text('Mulai Kuis', style: TextStyle(color: Colors.white)),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF6B705C),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizPlayPage(
+                      languageId: widget.languageId,
+                      languageName: widget.languageName,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       body: BlocBuilder<MaterialBloc, MaterialState>(
         builder: (context, state) {
           if (state is MaterialLoading) {
