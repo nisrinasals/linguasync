@@ -40,12 +40,21 @@ app.use((err, req, res, next) => {
 });
 
 db.sequelize
-  .authenticate()
+  .sync({ force: false })
   .then(() => {
     app.listen(PORT, () => {
       console.log(`LinguaSync API Gateway is running on http://localhost:${PORT}`);
     });
   })
   .catch((err) => {
-    console.error("Database connection configuration failed:", err);
+    console.error("Database sync failed:", err);
   });
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    status: "error",
+    message: "Something went wrong on the server!",
+    error: err.message,
+  });
+});

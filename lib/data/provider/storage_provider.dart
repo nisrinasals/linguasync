@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageProvider {
-  final String baseUrl = 'http://localhost:3000/api';
+  final String baseUrl = 'http://10.0.2.2:3000/api';
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   Future<void> writeToken(String token) async {
