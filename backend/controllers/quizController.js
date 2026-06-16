@@ -128,7 +128,6 @@ const quizController = {
           option_c: opt_c,
           option_d: opt_d,
           correct_answer: answer.toLowerCase(),
-          duration: 10,
         },
         { transaction: t },
       );
@@ -169,8 +168,7 @@ const quizController = {
         option_b: opt_b, 
         option_c: opt_c, 
         option_d: opt_d, 
-        correct_answer: answer.toLowerCase(),
-        duration: 10 
+        correct_answer: answer.toLowerCase()
       }, { transaction: t });
       await t.commit();
       return res.status(200).json({

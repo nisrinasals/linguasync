@@ -43,10 +43,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.ENUM("a", "b", "c", "d"),
       },
-      duration: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

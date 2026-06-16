@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       option_c: DataTypes.STRING,
       option_d: DataTypes.STRING,
       correct_answer: DataTypes.STRING,
-      duration: DataTypes.INTEGER,
     },
     {
       sequelize,
