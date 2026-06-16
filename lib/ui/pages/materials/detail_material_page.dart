@@ -5,6 +5,7 @@ import '../../../../logic/bloc/material/material_event.dart';
 import '../../../../logic/bloc/material/material_state.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../pages/quiz/quiz_play_page.dart';
+import '../../theme/japandi_theme.dart';
 
 class DetailMaterialPage extends StatefulWidget {
   final int languageId;
@@ -27,9 +28,8 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    BlocProvider.of<MaterialBloc>(
-      context,
-    ).add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
+    BlocProvider.of<MaterialBloc>(context)
+        .add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
   }
 
   @override
@@ -44,9 +44,8 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
         _scrollController.position.maxScrollExtent - 200) {
       final state = BlocProvider.of<MaterialBloc>(context).state;
       if (state is MaterialListLoaded && !state.hasReachedMax) {
-        BlocProvider.of<MaterialBloc>(
-          context,
-        ).add(FetchMaterials(languageId: widget.languageId, isRefresh: false));
+        BlocProvider.of<MaterialBloc>(context)
+            .add(FetchMaterials(languageId: widget.languageId, isRefresh: false));
       }
     }
   }
@@ -56,44 +55,50 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: JC.bgCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          padding: const EdgeInsets.all(20),
+          height: MediaQuery.of(context).size.height * 0.78,
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: JC.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
+                    child: Text(title, style: JT.titleLg),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close, color: JC.inkLt, size: 22),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-              const Divider(height: 24),
+              const SizedBox(height: 4),
+              const Divider(),
+              const SizedBox(height: 12),
               Expanded(
                 child: BlocBuilder<MaterialBloc, MaterialState>(
                   builder: (context, state) {
                     if (state is MaterialLoading) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF2C3E50),
-                        ),
+                        child: CircularProgressIndicator(color: JC.primary, strokeWidth: 2),
                       );
                     }
                     if (state is MaterialDetailLoaded) {
@@ -101,9 +106,9 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
                         child: Text(
                           state.material.content,
                           style: const TextStyle(
-                            fontSize: 16,
-                            height: 1.6,
-                            color: Colors.black87,
+                            fontSize: 15,
+                            height: 1.8,
+                            color: JC.ink,
                           ),
                         ),
                       );
@@ -120,9 +125,8 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
         );
       },
     ).then((_) {
-      BlocProvider.of<MaterialBloc>(
-        context,
-      ).add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
+      BlocProvider.of<MaterialBloc>(context)
+          .add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
     });
   }
 
@@ -130,16 +134,20 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Materi ${widget.languageName}'),
+        title: Text(widget.languageName),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: TextButton.icon(
-              icon: const Icon(Icons.quiz, color: Colors.white, size: 18),
-              label: const Text('Mulai Kuis', style: TextStyle(color: Colors.white)),
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF6B705C),
+            padding: const EdgeInsets.only(right: 12),
+            child: FilledButton.icon(
+              icon: const Icon(Icons.quiz_outlined, size: 16),
+              label: const Text('Mulai Kuis'),
+              style: FilledButton.styleFrom(
+                backgroundColor: JC.clay,
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                visualDensity: VisualDensity.compact,
               ),
               onPressed: () {
                 Navigator.push(
@@ -161,7 +169,7 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
           if (state is MaterialLoading) {
             return ListView.builder(
               itemCount: 5,
-              itemBuilder: (context, index) => const ShimmerLoading(),
+              itemBuilder: (_, __) => const ShimmerLoading(),
             );
           }
 
@@ -174,6 +182,7 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
 
             return ListView.builder(
               controller: _scrollController,
+              padding: const EdgeInsets.only(top: 8, bottom: 20),
               itemCount: state.hasReachedMax
                   ? state.materials.length
                   : state.materials.length + 1,
@@ -184,40 +193,45 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
 
                 final material = state.materials[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 6,
-                    horizontal: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 1,
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    leading: CircleAvatar(
-                      backgroundColor: const Color(0xFF2C3E50),
-                      child: Text(
-                        material.order.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => _showMaterialContent(material.id, material.title),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: JC.primarySfc,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              material.order.toString(),
+                              style: const TextStyle(
+                                color: JC.primary,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(material.title, style: JT.titleMd),
+                                const SizedBox(height: 3),
+                                const Text('Ketuk untuk mulai membaca', style: JT.caption),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: JC.inkLt),
+                        ],
                       ),
                     ),
-                    title: Text(
-                      material.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: const Text('Ketuk untuk mulai membaca materi'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () =>
-                        _showMaterialContent(material.id, material.title),
                   ),
                 );
               },

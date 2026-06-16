@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:linguasync/data/models/history_model.dart';
+import '../../theme/japandi_theme.dart';
 
 class QuizHistoryDetailPage extends StatelessWidget {
   final HistoryModel history;
@@ -8,95 +9,53 @@ class QuizHistoryDetailPage extends StatelessWidget {
 
   String _formatDateTime(String rawDate) {
     try {
-      final dateTime = DateTime.parse(rawDate).toLocal();
+      final dt = DateTime.parse(rawDate).toLocal();
       final months = [
-        'Januari',
-        'Februari',
-        'Maret',
-        'April',
-        'Mei',
-        'Juni',
-        'Juli',
-        'Agustus',
-        'September',
-        'Oktober',
-        'November',
-        'Desember',
+        'Januari','Februari','Maret','April','Mei','Juni',
+        'Juli','Agustus','September','Oktober','November','Desember'
       ];
-      final day = dateTime.day.toString().padLeft(2, '0');
-      final month = months[dateTime.month - 1];
-      final year = dateTime.year;
-      final hour = dateTime.hour.toString().padLeft(2, '0');
-      final minute = dateTime.minute.toString().padLeft(2, '0');
-      return '$day $month $year, $hour:$minute';
-    } catch (e) {
+      final day = dt.day.toString().padLeft(2, '0');
+      final month = months[dt.month - 1];
+      final hour = dt.hour.toString().padLeft(2, '0');
+      final minute = dt.minute.toString().padLeft(2, '0');
+      return '$day $month ${dt.year}, $hour:$minute';
+    } catch (_) {
       return rawDate;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isPassed = history.score >= 60;
-    final primaryColor = theme.primaryColor;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detail Hasil Kuis'),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: theme.colorScheme.onSurface,
-      ),
+      appBar: AppBar(title: const Text('Hasil Kuis')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Premium Status Card (with Gradient)
+              // Score hero card
               Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 32.0,
-                  horizontal: 24.0,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isPassed
-                        ? [
-                            const Color(0xFF11998e),
-                            const Color(0xFF38ef7d),
-                          ] // Vibrant emerald-green gradient
-                        : [
-                            const Color(0xFFe65c00),
-                            const Color(0xFFF9D423),
-                          ], // Energetic sunset orange-yellow gradient
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                  color: isPassed ? JC.successLt : JC.errorLt,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isPassed ? JC.success : JC.error,
+                    width: 1.5,
                   ),
-                  borderRadius: BorderRadius.circular(24.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          (isPassed
-                                  ? const Color(0xFF11998e)
-                                  : const Color(0xFFe65c00))
-                              .withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [
-                    // Floating circular container for score
+                    // Score circle
                     Container(
-                      width: 120,
-                      height: 120,
+                      width: 108,
+                      height: 108,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: isPassed ? JC.success : JC.error,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
                       ),
                       alignment: Alignment.center,
                       child: Column(
@@ -105,60 +64,47 @@ class QuizHistoryDetailPage extends StatelessWidget {
                           Text(
                             history.score.toStringAsFixed(0),
                             style: const TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 38,
+                              fontWeight: FontWeight.w800,
                               color: Colors.white,
+                              height: 1,
                             ),
                           ),
                           const Text(
-                            'PTS',
+                            'pts',
                             style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                               color: Colors.white70,
-                              letterSpacing: 1.5,
+                              letterSpacing: 1,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    // Status Text Badge
+                    const SizedBox(height: 20),
+                    // Status pill
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             isPassed ? Icons.check_circle : Icons.error_outline,
-                            color: isPassed
-                                ? const Color(0xFF11998e)
-                                : const Color(0xFFe65c00),
-                            size: 20,
+                            color: isPassed ? JC.success : JC.error,
+                            size: 18,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            isPassed ? 'LULUS KUIS' : 'BELUM LULUS',
+                            isPassed ? 'LULUS' : 'BELUM LULUS',
                             style: TextStyle(
-                              color: isPassed
-                                  ? const Color(0xFF11998e)
-                                  : const Color(0xFFe65c00),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              color: isPassed ? JC.success : JC.error,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
                               letterSpacing: 1.0,
                             ),
                           ),
@@ -168,90 +114,57 @@ class QuizHistoryDetailPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       isPassed
-                          ? 'Selamat! Pertahankan kerja bagus Anda.'
-                          : 'Jangan berkecil hati! Silakan pelajari materi lagi dan coba kembali.',
+                          ? 'Selamat! Pertahankan semangat belajar Anda.'
+                          : 'Jangan menyerah. Pelajari lagi dan coba kembali.',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: isPassed ? JC.success : JC.error,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
+                        height: 1.5,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 28),
 
-              // Detail Information section
+              const SizedBox(height: 24),
+
+              // Detail section header
               const Padding(
-                padding: EdgeInsets.only(left: 4.0, bottom: 12.0),
-                child: Text(
-                  'Rincian Pengerjaan',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+                padding: EdgeInsets.only(left: 2, bottom: 12),
+                child: Text('Rincian Pengerjaan', style: JT.titleMd),
               ),
 
+              // Detail card
               Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 2,
-                shadowColor: Colors.black12,
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      _buildDetailRow(
-                        context,
-                        icon: Icons.language,
-                        label: 'Bahasa',
-                        value: history.languageName ?? '-',
-                      ),
+                      _buildRow(Icons.language, 'Bahasa', history.languageName ?? '-'),
                       const Divider(height: 24),
-                      _buildDetailRow(
-                        context,
-                        icon: Icons.calendar_today,
-                        label: 'Tanggal Pengerjaan',
-                        value: _formatDateTime(history.createdAt),
-                      ),
+                      _buildRow(Icons.calendar_today_outlined, 'Tanggal Pengerjaan',
+                          _formatDateTime(history.createdAt)),
                       const Divider(height: 24),
-                      _buildDetailRow(
-                        context,
-                        icon: Icons.star_border,
-                        label: 'Status Kelulusan',
-                        value: isPassed
-                            ? 'Lulus (>= 60 Pts)'
-                            : 'Tidak Lulus (< 60 Pts)',
-                        valueColor: isPassed
-                            ? Colors.green[700]
-                            : Colors.red[700],
+                      _buildRow(Icons.tag, 'ID Riwayat', '#${history.id}'),
+                      const Divider(height: 24),
+                      _buildRow(
+                        isPassed ? Icons.verified_outlined : Icons.close_rounded,
+                        'Status',
+                        isPassed ? 'Lulus (≥ 60 pts)' : 'Tidak Lulus (< 60 pts)',
+                        valueColor: isPassed ? JC.success : JC.error,
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
 
-              // Back Button
+              const SizedBox(height: 28),
+
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 2,
-                ),
-                child: const Text(
-                  'Kembali ke Riwayat',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                child: const Text('Kembali ke Riwayat'),
               ),
             ],
           ),
@@ -260,38 +173,24 @@ class QuizHistoryDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-    Color? valueColor,
-  }) {
-    final theme = Theme.of(context);
+  Widget _buildRow(IconData icon, String label, String value, {Color? valueColor}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: theme.primaryColor, size: 22),
-        const SizedBox(width: 16),
+        Icon(icon, color: JC.primary, size: 20),
+        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
+              Text(label, style: JT.caption),
+              const SizedBox(height: 3),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: valueColor ?? theme.colorScheme.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: valueColor ?? JC.ink,
                 ),
               ),
             ],

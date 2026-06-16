@@ -1,52 +1,77 @@
 import 'package:flutter/material.dart';
 import '../../data/models/leaderboard_model.dart';
+import '../theme/japandi_theme.dart';
 
 class LeaderboardTile extends StatelessWidget {
   final LeaderboardModel leaderboard;
 
   const LeaderboardTile({super.key, required this.leaderboard});
 
-  Color? _getRankColor() {
-    if (leaderboard.rank == 1) return const Color(0xFFFFD700);
-    if (leaderboard.rank == 2) return const Color(0xFFC0C0C0);
-    if (leaderboard.rank == 3) return const Color(0xFFCD7F32);
-    return null;
+  Color _getRankBgColor() {
+    if (leaderboard.rank == 1) return JC.gold;
+    if (leaderboard.rank == 2) return JC.silver;
+    if (leaderboard.rank == 3) return JC.bronze;
+    return JC.bgMuted;
+  }
+
+  Color _getRankTextColor() {
+    if (leaderboard.rank <= 3) return Colors.white;
+    return JC.inkMd;
   }
 
   @override
   Widget build(BuildContext context) {
-    final rankColor = _getRankColor();
+    final isTop3 = leaderboard.rank <= 3;
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 1,
-      child: ListTile(
-        leading: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: rankColor ?? Colors.grey[200],
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            leaderboard.rank.toString(),
-            style: TextStyle(
-              color: rankColor != null ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            // Rank badge
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: _getRankBgColor(),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                leaderboard.rank.toString(),
+                style: TextStyle(
+                  color: _getRankTextColor(),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
             ),
-          ),
-        ),
-        title: Text(
-          leaderboard.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        trailing: Text(
-          '${leaderboard.totalScore.toStringAsFixed(0)} Pts',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C3E50),
-          ),
+            const SizedBox(width: 14),
+            // Name
+            Expanded(
+              child: Text(
+                leaderboard.name,
+                style: JT.titleMd.copyWith(
+                  fontWeight: isTop3 ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+            // Score
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: JC.primarySfc,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '${leaderboard.totalScore.toStringAsFixed(0)} pts',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: JC.primary,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -7,6 +7,7 @@ import '../../../../logic/bloc/language/language_state.dart';
 import '../../pages/materials/detail_material_page.dart';
 import '../../widgets/language_card.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../theme/japandi_theme.dart';
 
 class MyStudyPage extends StatefulWidget {
   const MyStudyPage({super.key});
@@ -36,10 +37,9 @@ class _MyStudyPageState extends State<MyStudyPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      if (!_hasReachedMax && BlocProvider.of<LanguageBloc>(context).state is! LanguageLoading) {
-        BlocProvider.of<LanguageBloc>(
-          context,
-        ).add(const FetchMyLanguages(isRefresh: false));
+      if (!_hasReachedMax &&
+          BlocProvider.of<LanguageBloc>(context).state is! LanguageLoading) {
+        BlocProvider.of<LanguageBloc>(context).add(const FetchMyLanguages(isRefresh: false));
       }
     }
   }
@@ -47,24 +47,27 @@ class _MyStudyPageState extends State<MyStudyPage> {
   void _confirmUnenroll(int enrollmentId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Keluar Kelas'),
-        content: const Text(
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Keluar Kelas', style: JT.titleMd),
+        content: Text(
           'Apakah Anda yakin ingin menghapus bahasa ini dari daftar studi Anda?',
+          style: JT.bodySm,
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('Batal'),
           ),
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: JC.error),
             onPressed: () {
-              BlocProvider.of<LanguageBloc>(
-                context,
-              ).add(UnenrollLanguageRequested(enrollmentId: enrollmentId));
-              Navigator.pop(context);
+              BlocProvider.of<LanguageBloc>(context).add(
+                UnenrollLanguageRequested(enrollmentId: enrollmentId),
+              );
+              Navigator.pop(ctx);
             },
-            child: const Text('Keluar', style: TextStyle(color: Colors.red)),
+            child: const Text('Keluar'),
           ),
         ],
       ),
@@ -74,20 +77,16 @@ class _MyStudyPageState extends State<MyStudyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Studi Saya (MyStudy)')),
+      appBar: AppBar(title: const Text('Studi Saya')),
       body: BlocConsumer<LanguageBloc, LanguageState>(
         listener: (context, state) {
           if (state is LanguageOperationSuccess) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-            BlocProvider.of<LanguageBloc>(
-              context,
-            ).add(const FetchMyLanguages(isRefresh: true));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
+            BlocProvider.of<LanguageBloc>(context).add(const FetchMyLanguages(isRefresh: true));
           } else if (state is LanguageFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.error)));
           }
         },
         builder: (context, state) {
@@ -99,38 +98,33 @@ class _MyStudyPageState extends State<MyStudyPage> {
           if (state is LanguageLoading && _myLanguages.isEmpty) {
             return ListView.builder(
               itemCount: 5,
-              itemBuilder: (context, index) => const ShimmerLoading(),
+              itemBuilder: (_, __) => const ShimmerLoading(),
             );
           }
 
           if (_myLanguages.isEmpty) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.all(32),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.menu_book,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Belum ada kelas yang diikuti.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: JC.bgMuted,
+                        borderRadius: BorderRadius.circular(20),
                       ),
+                      child: const Icon(Icons.menu_book_outlined, size: 36, color: JC.inkLt),
                     ),
+                    const SizedBox(height: 20),
+                    const Text('Belum ada kelas diikuti', style: JT.titleMd),
                     const SizedBox(height: 8),
                     Text(
-                      'Silakan pilih dan ikuti bahasa pembelajaran di menu Eksplorasi.',
+                      'Pilih bahasa di menu Eksplorasi untuk mulai belajar.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[400],
-                      ),
+                      style: JT.bodySm,
                     ),
                   ],
                 ),
@@ -139,20 +133,19 @@ class _MyStudyPageState extends State<MyStudyPage> {
           }
 
           return RefreshIndicator(
+            color: JC.primary,
+            backgroundColor: JC.bgCard,
             onRefresh: () async {
-              BlocProvider.of<LanguageBloc>(
-                context,
-              ).add(const FetchMyLanguages(isRefresh: true));
+              BlocProvider.of<LanguageBloc>(context).add(const FetchMyLanguages(isRefresh: true));
             },
             child: ListView.builder(
               controller: _scrollController,
+              padding: const EdgeInsets.only(top: 8, bottom: 20),
               itemCount: _hasReachedMax
                   ? _myLanguages.length
                   : _myLanguages.length + 1,
               itemBuilder: (context, index) {
-                if (index >= _myLanguages.length) {
-                  return const ShimmerLoading();
-                }
+                if (index >= _myLanguages.length) return const ShimmerLoading();
 
                 final language = _myLanguages[index];
                 return Stack(
@@ -173,15 +166,22 @@ class _MyStudyPageState extends State<MyStudyPage> {
                       },
                     ),
                     Positioned(
-                      top: 12,
+                      top: 10,
                       right: 20,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.remove_circle_outline,
-                          color: Colors.red[400],
-                          size: 22,
+                      child: Tooltip(
+                        message: 'Hapus dari daftar',
+                        child: InkWell(
+                          onTap: () => _confirmUnenroll(language.id),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            child: const Icon(
+                              Icons.remove_circle_outline,
+                              color: JC.error,
+                              size: 20,
+                            ),
+                          ),
                         ),
-                        onPressed: () => _confirmUnenroll(language.id),
                       ),
                     ),
                   ],

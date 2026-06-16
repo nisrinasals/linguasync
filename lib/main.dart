@@ -29,6 +29,7 @@ import 'package:linguasync/ui/pages/languages/admin_manage_language_page.dart';
 import 'package:linguasync/ui/pages/leaderboard/global_leaderboard_page.dart';
 import 'package:linguasync/ui/pages/history/user_history_page.dart';
 import 'package:linguasync/ui/pages/admin/admin_dashboard_page.dart';
+import 'package:linguasync/ui/theme/japandi_theme.dart';
 
 void main() {
   Bloc.observer = AppBlocObserver();
@@ -109,22 +110,8 @@ class LinguaSyncApp extends StatelessWidget {
           },
           child: MaterialApp(
             title: 'LinguaSync',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primaryColor: const Color(0xFF6B705C),
-            scaffoldBackgroundColor: const Color(0xFFFAF9F6),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFFFAF9F6),
-              elevation: 0,
-              iconTheme: IconThemeData(color: Color(0xFF333333)),
-              titleTextStyle: TextStyle(
-                color: Color(0xFF333333),
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            useMaterial3: true,
-          ),
+            debugShowCheckedModeBanner: false,
+            theme: buildJapandiTheme(),
           initialRoute: '/',
           routes: {
             '/': (context) => const SplashPage(),

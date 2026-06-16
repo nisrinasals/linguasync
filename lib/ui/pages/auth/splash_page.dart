@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../logic/bloc/auth/auth_bloc.dart';
 import '../../../../logic/bloc/auth/auth_event.dart';
 import '../../../../logic/bloc/auth/auth_state.dart';
+import '../../theme/japandi_theme.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -21,6 +22,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: JC.bg,
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
@@ -33,26 +35,46 @@ class _SplashPageState extends State<SplashPage> {
             Navigator.pushReplacementNamed(context, '/login');
           }
         },
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'LinguaSync',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
-                  letterSpacing: 1.5,
+              // Logo mark
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: JC.primary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.translate,
+                  color: Colors.white,
+                  size: 36,
                 ),
               ),
-              SizedBox(height: 24),
-              SizedBox(
-                width: 28,
-                height: 28,
+              const SizedBox(height: 24),
+              const Text(
+                'LinguaSync',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  color: JC.ink,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Belajar bahasa dengan tenang',
+                style: JT.bodySm,
+              ),
+              const SizedBox(height: 40),
+              const SizedBox(
+                width: 24,
+                height: 24,
                 child: CircularProgressIndicator(
-                  color: Color(0xFF2C3E50),
-                  strokeWidth: 2.5,
+                  color: JC.primary,
+                  strokeWidth: 2,
                 ),
               ),
             ],

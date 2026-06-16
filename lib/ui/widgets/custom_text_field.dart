@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/japandi_theme.dart';
 
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -7,6 +8,7 @@ class CustomTextField extends StatefulWidget {
   final bool isPassword;
   final int maxLines;
   final TextInputType keyboardType;
+  final String? hintText;
 
   const CustomTextField({
     super.key,
@@ -16,6 +18,7 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.maxLines = 1,
     this.keyboardType = TextInputType.text,
+    this.hintText,
   });
 
   @override
@@ -33,25 +36,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
       obscureText: widget.isPassword ? _obscureText : false,
       maxLines: widget.isPassword ? 1 : widget.maxLines,
       keyboardType: widget.keyboardType,
+      style: const TextStyle(color: JC.ink, fontSize: 15),
       decoration: InputDecoration(
         labelText: widget.label,
+        hintText: widget.hintText,
         alignLabelWithHint: widget.maxLines > 1,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFDDBEA9), width: 2),
-        ),
         suffixIcon: widget.isPassword
             ? IconButton(
                 icon: Icon(
-                  _obscureText ? Icons.visibility_off : Icons.visibility,
+                  _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  color: JC.inkLt,
+                  size: 20,
                 ),
                 onPressed: () {
                   setState(() {

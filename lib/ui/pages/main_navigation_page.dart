@@ -10,20 +10,21 @@ import 'package:linguasync/logic/bloc/leaderboard/leaderboard_bloc.dart';
 import 'package:linguasync/logic/bloc/leaderboard/leaderboard_event.dart';
 import 'package:linguasync/logic/bloc/history/history_bloc.dart';
 import 'package:linguasync/logic/bloc/history/history_event.dart';
+import 'package:linguasync/ui/theme/japandi_theme.dart';
 
 class MainNavigationPage extends StatefulWidget {
-  const MainNavigationPage({Key? key}) : super(key: key);
+  const MainNavigationPage({super.key});
 
   @override
   State<MainNavigationPage> createState() => _MainNavigationPageState();
 }
+
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    // Fetch initial page data on startup
     context.read<LanguageBloc>().add(const FetchLanguages(isRefresh: true));
   }
 
@@ -35,10 +36,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    
+    setState(() => _selectedIndex = index);
+
     if (index == 0) {
       context.read<LanguageBloc>().add(const FetchLanguages(isRefresh: true));
     } else if (index == 1) {
@@ -57,30 +56,36 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         index: _selectedIndex,
         children: _pages,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'My Study',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.leaderboard),
-            label: 'Leaderboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: JC.divider)),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.explore_outlined),
+              activeIcon: Icon(Icons.explore),
+              label: 'Explore',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book_outlined),
+              activeIcon: Icon(Icons.menu_book),
+              label: 'Studi',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.leaderboard_outlined),
+              activeIcon: Icon(Icons.leaderboard),
+              label: 'Peringkat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_outlined),
+              activeIcon: Icon(Icons.history),
+              label: 'Riwayat',
+            ),
+          ],
+        ),
       ),
     );
   }

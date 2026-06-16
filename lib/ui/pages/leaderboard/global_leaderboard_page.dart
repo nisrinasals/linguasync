@@ -5,6 +5,7 @@ import '../../../../logic/bloc/leaderboard/leaderboard_event.dart';
 import '../../../../logic/bloc/leaderboard/leaderboard_state.dart';
 import '../../widgets/leaderboard_tile.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../theme/japandi_theme.dart';
 
 class GlobalLeaderboardPage extends StatefulWidget {
   const GlobalLeaderboardPage({super.key});
@@ -20,9 +21,7 @@ class _GlobalLeaderboardPageState extends State<GlobalLeaderboardPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    BlocProvider.of<LeaderboardBloc>(
-      context,
-    ).add(const FetchLeaderboard(isRefresh: true));
+    BlocProvider.of<LeaderboardBloc>(context).add(const FetchLeaderboard(isRefresh: true));
   }
 
   @override
@@ -37,9 +36,7 @@ class _GlobalLeaderboardPageState extends State<GlobalLeaderboardPage> {
         _scrollController.position.maxScrollExtent - 200) {
       final state = BlocProvider.of<LeaderboardBloc>(context).state;
       if (state is LeaderboardLoaded && !state.hasReachedMax) {
-        BlocProvider.of<LeaderboardBloc>(
-          context,
-        ).add(const FetchLeaderboard(isRefresh: false));
+        BlocProvider.of<LeaderboardBloc>(context).add(const FetchLeaderboard(isRefresh: false));
       }
     }
   }
@@ -47,65 +44,33 @@ class _GlobalLeaderboardPageState extends State<GlobalLeaderboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Papan Peringkat Global')),
+      appBar: AppBar(title: const Text('Papan Peringkat')),
       body: Column(
         children: [
+          // Current user stats banner
           BlocBuilder<LeaderboardBloc, LeaderboardState>(
             builder: (context, state) {
               if (state is LeaderboardLoaded) {
                 return Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2C3E50),
-                    borderRadius: BorderRadius.circular(16),
+                    color: JC.ink,
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Column(
-                        children: [
-                          const Text(
-                            'Peringkat Anda',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            state.currentUserRank != null
-                                ? '#${state.currentUserRank}'
-                                : '-',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                      _buildStat(
+                        label: 'Peringkat Saya',
+                        value: state.currentUserRank != null
+                            ? '#${state.currentUserRank}'
+                            : '—',
                       ),
-                      Container(width: 1, height: 40, color: Colors.white24),
-                      Column(
-                        children: [
-                          const Text(
-                            'Total Skor Kuis',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${state.currentUserScore.toStringAsFixed(0)} Pts',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                      Container(width: 1, height: 36, color: Colors.white12),
+                      _buildStat(
+                        label: 'Total Skor',
+                        value: '${state.currentUserScore.toStringAsFixed(0)} pts',
                       ),
                     ],
                   ),
@@ -114,31 +79,51 @@ class _GlobalLeaderboardPageState extends State<GlobalLeaderboardPage> {
               return const SizedBox();
             },
           ),
+
+          const SizedBox(height: 12),
+
           Expanded(
             child: BlocBuilder<LeaderboardBloc, LeaderboardState>(
               builder: (context, state) {
                 if (state is LeaderboardLoading) {
                   return ListView.builder(
                     itemCount: 5,
-                    itemBuilder: (context, index) => const ShimmerLoading(),
+                    itemBuilder: (_, __) => const ShimmerLoading(),
                   );
                 }
 
                 if (state is LeaderboardLoaded) {
                   if (state.rankings.isEmpty) {
-                    return const Center(
-                      child: Text('Belum ada data kompetisi kuis tersedia.'),
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: JC.bgMuted,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.leaderboard_outlined, color: JC.inkLt, size: 32),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text('Belum ada data kompetisi', style: JT.titleMd),
+                        ],
+                      ),
                     );
                   }
 
                   return RefreshIndicator(
+                    color: JC.primary,
+                    backgroundColor: JC.bgCard,
                     onRefresh: () async {
-                      BlocProvider.of<LeaderboardBloc>(
-                        context,
-                      ).add(const FetchLeaderboard(isRefresh: true));
+                      BlocProvider.of<LeaderboardBloc>(context)
+                          .add(const FetchLeaderboard(isRefresh: true));
                     },
                     child: ListView.builder(
                       controller: _scrollController,
+                      padding: const EdgeInsets.only(bottom: 20),
                       itemCount: state.hasReachedMax
                           ? state.rankings.length
                           : state.rankings.length + 1,
@@ -146,9 +131,7 @@ class _GlobalLeaderboardPageState extends State<GlobalLeaderboardPage> {
                         if (index >= state.rankings.length) {
                           return const ShimmerLoading();
                         }
-
-                        final rankData = state.rankings[index];
-                        return LeaderboardTile(leaderboard: rankData);
+                        return LeaderboardTile(leaderboard: state.rankings[index]);
                       },
                     ),
                   );
@@ -156,10 +139,7 @@ class _GlobalLeaderboardPageState extends State<GlobalLeaderboardPage> {
 
                 if (state is LeaderboardFailure) {
                   return Center(
-                    child: Text(
-                      state.error,
-                      style: const TextStyle(color: Colors.red),
-                    ),
+                    child: Text(state.error, style: const TextStyle(color: JC.error)),
                   );
                 }
 
@@ -169,6 +149,27 @@ class _GlobalLeaderboardPageState extends State<GlobalLeaderboardPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStat({required String label, required String value}) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 0.3),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:linguasync/logic/bloc/auth/auth_event.dart';
 import 'package:linguasync/logic/bloc/auth/auth_state.dart';
 import 'package:linguasync/ui/widgets/custom_button.dart';
 import 'package:linguasync/ui/widgets/custom_text_field.dart';
+import '../../theme/japandi_theme.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -44,17 +45,13 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Color(0xFF333333)),
-      ),
+      appBar: AppBar(elevation: 0, backgroundColor: Colors.transparent),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccessMessage) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
             Navigator.pop(context);
           } else if (state is Authenticated) {
             if (state.user.role == 'admin') {
@@ -63,96 +60,81 @@ class _RegisterPageState extends State<RegisterPage> {
               Navigator.pushReplacementNamed(context, '/main');
             }
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error)),
+            );
           }
         },
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 8.0,
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Daftar Akun Baru',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 8),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Daftar Akun Baru', style: JT.displaySm),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Lengkapi formulir untuk bergabung ke LinguaSync',
+                      style: JT.bodySm,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Lengkapi form untuk bergabung ke LinguaSync',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 32),
-                  CustomTextField(
-                    controller: _nameController,
-                    label: 'Nama Lengkap',
-                    validator: (val) => val == null || val.isEmpty
-                        ? 'Nama lengkap wajib diisi'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    controller: _emailController,
-                    label: 'Alamat Email',
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (val) {
-                      if (val == null || val.isEmpty)
-                        return 'Email wajib diisi';
-                      if (!RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                      ).hasMatch(val)) {
-                        return 'Format penulisan email salah';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    controller: _passwordController,
-                    label: 'Kata Sandi',
-                    isPassword: true,
-                    validator: (val) {
-                      if (val == null || val.isEmpty)
-                        return 'Kata sandi wajib diisi';
-                      if (val.length < 6)
-                        return 'Kata sandi minimal 6 karakter';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    controller: _confirmPasswordController,
-                    label: 'Konfirmasi Kata Sandi',
-                    isPassword: true,
-                    validator: (val) {
-                      if (val == null || val.isEmpty)
-                        return 'Konfirmasi kata sandi wajib diisi';
-                      if (val != _passwordController.text)
-                        return 'Kata sandi tidak cocok';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      return CustomButton(
-                        text: 'Daftar Akun',
-                        onPressed: _onRegisterSubmitted,
-                        isLoading: state is AuthLoading,
-                      );
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 32),
+                    CustomTextField(
+                      controller: _nameController,
+                      label: 'Nama Lengkap',
+                      validator: (val) => val == null || val.isEmpty
+                          ? 'Nama lengkap wajib diisi'
+                          : null,
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _emailController,
+                      label: 'Alamat Email',
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) return 'Email wajib diisi';
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
+                          return 'Format email tidak valid';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _passwordController,
+                      label: 'Kata Sandi',
+                      isPassword: true,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) return 'Kata sandi wajib diisi';
+                        if (val.length < 6) return 'Kata sandi minimal 6 karakter';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _confirmPasswordController,
+                      label: 'Konfirmasi Kata Sandi',
+                      isPassword: true,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) return 'Konfirmasi kata sandi wajib diisi';
+                        if (val != _passwordController.text) return 'Kata sandi tidak cocok';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        return CustomButton(
+                          text: 'Daftar Akun',
+                          onPressed: _onRegisterSubmitted,
+                          isLoading: state is AuthLoading,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
