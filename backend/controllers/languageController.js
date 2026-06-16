@@ -145,7 +145,13 @@ const languageController = {
       const userId = req.user.id;
 
       const enrollment = await Enrollment.findOne({
-        where: { id: enrollmentId, user_id: userId },
+        where: {
+          user_id: userId,
+          [Op.or]: [
+            { id: enrollmentId },
+            { language_id: enrollmentId }
+          ]
+        },
         transaction: t,
       });
 

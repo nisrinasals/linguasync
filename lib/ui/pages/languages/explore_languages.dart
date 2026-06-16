@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'detail_language_page.dart';
+import 'package:linguasync/data/models/language_model.dart';
 import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
 import 'package:linguasync/logic/bloc/auth/auth_event.dart';
 import '../../../../logic/bloc/language/language_bloc.dart';
@@ -18,6 +20,8 @@ class ExploreLanguagePage extends StatefulWidget {
 class _ExploreLanguagePageState extends State<ExploreLanguagePage> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
+  List<LanguageModel> _languages = [];
+  bool _hasReachedMax = false;
 
   @override
   void initState() {
@@ -39,8 +43,7 @@ class _ExploreLanguagePageState extends State<ExploreLanguagePage> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      final state = BlocProvider.of<LanguageBloc>(context).state;
-      if (state is LanguageExploreLoaded && !state.hasReachedMax) {
+      if (!_hasReachedMax && BlocProvider.of<LanguageBloc>(context).state is! LanguageLoading) {
         BlocProvider.of<LanguageBloc>(context).add(
           FetchLanguages(
             search: _searchController.text.trim(),
@@ -103,101 +106,120 @@ class _ExploreLanguagePageState extends State<ExploreLanguagePage> {
           ),
         ],
       ),
-      body: BlocListener<LanguageBloc, LanguageState>(
+      body: BlocConsumer<LanguageBloc, LanguageState>(
         listener: (context, state) {
-          if (state is LanguageOperationSuccess) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-            BlocProvider.of<LanguageBloc>(
-              context,
-            ).add(const FetchLanguages(isRefresh: true));
-          } else if (state is LanguageFailure) {
+          if (state is LanguageFailure) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.error)));
           }
         },
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                decoration: InputDecoration(
-                  hintText: 'Cari bahasa pembelajaran...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+        builder: (context, state) {
+          if (state is LanguageExploreLoaded) {
+            _languages = state.languages;
+            _hasReachedMax = state.hasReachedMax;
+          }
+
+          if (state is LanguageLoading && _languages.isEmpty) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
+                    decoration: InputDecoration(
+                      hintText: 'Cari bahasa pembelajaran...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: 5,
+                    itemBuilder: (context, index) => const ShimmerLoading(),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: 'Cari bahasa pembelajaran...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: BlocBuilder<LanguageBloc, LanguageState>(
-                builder: (context, state) {
-                  if (state is LanguageLoading) {
-                    return ListView.builder(
-                      itemCount: 5,
-                      itemBuilder: (context, index) => const ShimmerLoading(),
-                    );
-                  }
-
-                  if (state is LanguageExploreLoaded) {
-                    if (state.languages.isEmpty) {
-                      return const Center(
-                        child: Text('Tidak ada bahasa yang ditemukan.'),
-                      );
-                    }
-
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        BlocProvider.of<LanguageBloc>(context).add(
-                          FetchLanguages(
-                            search: _searchController.text.trim(),
-                            isRefresh: true,
-                          ),
-                        );
-                      },
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        itemCount: state.hasReachedMax
-                            ? state.languages.length
-                            : state.languages.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index >= state.languages.length) {
-                            return const ShimmerLoading();
-                          }
-
-                          final language = state.languages[index];
-                          return LanguageCard(
-                            language: language,
-                            buttonText: 'Ikuti Kelas',
-                            onButtonPressed: () {
-                              BlocProvider.of<LanguageBloc>(context).add(
-                                EnrollLanguageRequested(
-                                  languageId: language.id,
-                                ),
-                              );
-                            },
+              Expanded(
+                child: _languages.isEmpty
+                    ? Center(
+                        child: Text(
+                          state is LanguageFailure
+                              ? state.error
+                              : 'Tidak ada bahasa yang ditemukan.',
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          BlocProvider.of<LanguageBloc>(context).add(
+                            FetchLanguages(
+                              search: _searchController.text.trim(),
+                              isRefresh: true,
+                            ),
                           );
                         },
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          itemCount: _hasReachedMax
+                              ? _languages.length
+                              : _languages.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index >= _languages.length) {
+                              return const ShimmerLoading();
+                            }
+
+                            final language = _languages[index];
+                            return LanguageCard(
+                              language: language,
+                              onTap: () {
+                                final languageBloc = BlocProvider.of<LanguageBloc>(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetailLanguagePage(
+                                      language: language,
+                                    ),
+                                  ),
+                                ).then((_) {
+                                  // Refresh list when returning from detail page
+                                  languageBloc.add(
+                                    const FetchLanguages(isRefresh: true),
+                                  );
+                                });
+                              },
+                            );
+                          },
+                        ),
                       ),
-                    );
-                  }
-
-                  if (state is LanguageFailure) {
-                    return Center(child: Text(state.error));
-                  }
-
-                  return const SizedBox();
-                },
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        },
       ),
     );
   }

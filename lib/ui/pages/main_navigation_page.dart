@@ -20,6 +20,13 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // Fetch initial page data on startup
+    context.read<LanguageBloc>().add(const FetchLanguages(isRefresh: true));
+  }
+
   final List<Widget> _pages = [
     const ExploreLanguagePage(),
     const MyStudyPage(),
