@@ -4,6 +4,7 @@ import '../../../../logic/bloc/history/history_bloc.dart';
 import '../../../../logic/bloc/history/history_event.dart';
 import '../../../../logic/bloc/history/history_state.dart';
 import '../../widgets/shimmer_loading.dart';
+import 'quiz_history_detail_page.dart';
 
 class UserHistoryPage extends StatefulWidget {
   const UserHistoryPage({super.key});
@@ -102,6 +103,14 @@ class _UserHistoryPageState extends State<UserHistoryPage> {
                     ),
                     elevation: 1,
                     child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuizHistoryDetailPage(history: history),
+                          ),
+                        );
+                      },
                       contentPadding: const EdgeInsets.all(16),
                       leading: const CircleAvatar(
                         backgroundColor: Color(0xFF2C3E50),
