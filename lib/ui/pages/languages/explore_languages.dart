@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
+import 'package:linguasync/logic/bloc/auth/auth_event.dart';
 import '../../../../logic/bloc/language/language_bloc.dart';
 import '../../../../logic/bloc/language/language_event.dart';
 import '../../../../logic/bloc/language/language_state.dart';
@@ -64,7 +66,39 @@ class _ExploreLanguagePageState extends State<ExploreLanguagePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/login');
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Konfirmasi Logout'),
+                    content: const Text(
+                      'Apakah Anda yakin ingin keluar dari aplikasi?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(context).pop(), 
+                        child: const Text('Batal'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.read<AuthBloc>().add(LogoutRequested());
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/login',
+                            (route) => false,
+                          );
+                        },
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
             },
           ),
         ],
@@ -86,82 +120,84 @@ class _ExploreLanguagePageState extends State<ExploreLanguagePage> {
         },
         child: Column(
           children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Cari bahasa pembelajaran...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Cari bahasa pembelajaran...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
               ),
             ),
-          ),
-          Expanded(
-            child: BlocBuilder<LanguageBloc, LanguageState>(
-              builder: (context, state) {
-                if (state is LanguageLoading) {
-                  return ListView.builder(
-                    itemCount: 5,
-                    itemBuilder: (context, index) => const ShimmerLoading(),
-                  );
-                }
-
-                if (state is LanguageExploreLoaded) {
-                  if (state.languages.isEmpty) {
-                    return const Center(
-                      child: Text('Tidak ada bahasa yang ditemukan.'),
+            Expanded(
+              child: BlocBuilder<LanguageBloc, LanguageState>(
+                builder: (context, state) {
+                  if (state is LanguageLoading) {
+                    return ListView.builder(
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const ShimmerLoading(),
                     );
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      BlocProvider.of<LanguageBloc>(context).add(
-                        FetchLanguages(
-                          search: _searchController.text.trim(),
-                          isRefresh: true,
-                        ),
+                  if (state is LanguageExploreLoaded) {
+                    if (state.languages.isEmpty) {
+                      return const Center(
+                        child: Text('Tidak ada bahasa yang ditemukan.'),
                       );
-                    },
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: state.hasReachedMax
-                          ? state.languages.length
-                          : state.languages.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index >= state.languages.length) {
-                          return const ShimmerLoading();
-                        }
+                    }
 
-                        final language = state.languages[index];
-                        return LanguageCard(
-                          language: language,
-                          buttonText: 'Ikuti Kelas',
-                          onButtonPressed: () {
-                            BlocProvider.of<LanguageBloc>(context).add(
-                              EnrollLanguageRequested(languageId: language.id),
-                            );
-                          },
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        BlocProvider.of<LanguageBloc>(context).add(
+                          FetchLanguages(
+                            search: _searchController.text.trim(),
+                            isRefresh: true,
+                          ),
                         );
                       },
-                    ),
-                  );
-                }
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: state.hasReachedMax
+                            ? state.languages.length
+                            : state.languages.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index >= state.languages.length) {
+                            return const ShimmerLoading();
+                          }
 
-                if (state is LanguageFailure) {
-                  return Center(child: Text(state.error));
-                }
+                          final language = state.languages[index];
+                          return LanguageCard(
+                            language: language,
+                            buttonText: 'Ikuti Kelas',
+                            onButtonPressed: () {
+                              BlocProvider.of<LanguageBloc>(context).add(
+                                EnrollLanguageRequested(
+                                  languageId: language.id,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  }
 
-                return const SizedBox();
-              },
+                  if (state is LanguageFailure) {
+                    return Center(child: Text(state.error));
+                  }
+
+                  return const SizedBox();
+                },
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

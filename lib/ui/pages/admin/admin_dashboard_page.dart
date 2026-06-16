@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
+import '../../../logic/bloc/auth/auth_event.dart';
 import '../../pages/languages/admin_manage_language_page.dart';
 
 class AdminDashboardPage extends StatelessWidget {
@@ -8,12 +11,43 @@ class AdminDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Panel Hub'),
+        title: const Text('Dashboard Admin'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.power_settings_new, color: Colors.red),
+            icon: const Icon(Icons.logout),
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/login');
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Konfirmasi Logout'),
+                    content: const Text(
+                      'Apakah Anda yakin ingin keluar dari aplikasi?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Batal'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.read<AuthBloc>().add(LogoutRequested());
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/login',
+                            (route) => false,
+                          );
+                        },
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
             },
           ),
         ],
