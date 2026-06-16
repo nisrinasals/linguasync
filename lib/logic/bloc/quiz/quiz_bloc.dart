@@ -166,6 +166,17 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
   Future<void> _onCreateQuizQuestionRequested(CreateQuizQuestionRequested event, Emitter<QuizState> emit) async {
     emit(QuizLoading());
+    final optA = event.optA.trim().toLowerCase();
+    final optB = event.optB.trim().toLowerCase();
+    final optC = event.optC.trim().toLowerCase();
+    final optD = event.optD.trim().toLowerCase();
+
+    final uniqueOptions = {optA, optB, optC, optD};
+    if (uniqueOptions.length < 4) {
+      emit(const QuizFailure(error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.'));
+      return;
+    }
+
     try {
       await quizRepository.adminCreateQuestion(
         event.languageId,
@@ -184,6 +195,17 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
   Future<void> _onUpdateQuizQuestionRequested(UpdateQuizQuestionRequested event, Emitter<QuizState> emit) async {
     emit(QuizLoading());
+    final optA = event.optA.trim().toLowerCase();
+    final optB = event.optB.trim().toLowerCase();
+    final optC = event.optC.trim().toLowerCase();
+    final optD = event.optD.trim().toLowerCase();
+
+    final uniqueOptions = {optA, optB, optC, optD};
+    if (uniqueOptions.length < 4) {
+      emit(const QuizFailure(error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.'));
+      return;
+    }
+
     try {
       await quizRepository.adminUpdateQuestion(
         event.id,

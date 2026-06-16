@@ -23,7 +23,8 @@ class MaterialBloc extends Bloc<MaterialEvent, MaterialState> {
 
     if (!event.isRefresh && currentState is MaterialListLoaded) {
       if (currentState.languageId == event.languageId &&
-          currentState.hasReachedMax)
+          currentState.hasReachedMax &&
+          currentState.search == event.search)
         return;
 
       try {
@@ -31,6 +32,7 @@ class MaterialBloc extends Bloc<MaterialEvent, MaterialState> {
         final result = await materialRepository.getMaterialsByLanguage(
           event.languageId,
           pageToFetch,
+          search: event.search,
         );
         final materials = result['data'] as List<MaterialModel>;
         final totalPages = result['totalPages'] as int;
@@ -40,6 +42,7 @@ class MaterialBloc extends Bloc<MaterialEvent, MaterialState> {
             materials: List.of(currentState.materials)..addAll(materials),
             currentPage: pageToFetch,
             hasReachedMax: pageToFetch >= totalPages,
+            search: event.search,
           ),
         );
       } catch (e) {
@@ -53,6 +56,7 @@ class MaterialBloc extends Bloc<MaterialEvent, MaterialState> {
         final result = await materialRepository.getMaterialsByLanguage(
           event.languageId,
           1,
+          search: event.search,
         );
         final materials = result['data'] as List<MaterialModel>;
         final totalPages = result['totalPages'] as int;
@@ -63,6 +67,7 @@ class MaterialBloc extends Bloc<MaterialEvent, MaterialState> {
             currentPage: 1,
             hasReachedMax: 1 >= totalPages,
             languageId: event.languageId,
+            search: event.search,
           ),
         );
       } catch (e) {

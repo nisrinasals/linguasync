@@ -21,9 +21,21 @@ exports.submitValidation = [
 ];
 
 exports.questionValidation = [
-  body("language_id").notEmpty().withMessage("Language ID wajib diisi.").isInt().withMessage("Language ID harus berupa angka bulat."),
+  body("language_id").optional({ checkFalsy: true }).isInt().withMessage("Language ID harus berupa angka bulat."),
   body("question").trim().notEmpty().withMessage("Pertanyaan kuis wajib diisi."),
-  body("opt_a").trim().notEmpty().withMessage("Pilihan opsi A wajib diisi."),
+  body("opt_a")
+    .trim()
+    .notEmpty()
+    .withMessage("Pilihan opsi A wajib diisi.")
+    .custom((value, { req }) => {
+      const opts = [value, req.body.opt_b, req.body.opt_c, req.body.opt_d].map(o => o ? o.toString().trim().toLowerCase() : '');
+      const nonEmpties = opts.filter(o => o !== '');
+      const uniqueOpts = new Set(nonEmpties);
+      if (uniqueOpts.size !== nonEmpties.length) {
+        throw new Error("Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.");
+      }
+      return true;
+    }),
   body("opt_b").trim().notEmpty().withMessage("Pilihan opsi B wajib diisi."),
   body("opt_c").trim().notEmpty().withMessage("Pilihan opsi C wajib diisi."),
   body("opt_d").trim().notEmpty().withMessage("Pilihan opsi D wajib diisi."),

@@ -4,6 +4,7 @@ const materialController = {
   getMaterialsByLanguage: async (req, res) => {
     try {
       const { language_id } = req.query;
+      const search = req.query.search || "";
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
@@ -15,8 +16,14 @@ const materialController = {
         });
       }
 
+      const { Op } = require("sequelize");
+      const whereClause = { language_id };
+      if (search) {
+        whereClause.title = { [Op.like]: `%${search}%` };
+      }
+
       const { count, rows } = await Material.findAndCountAll({
-        where: { language_id },
+        where: whereClause,
         limit,
         offset,
         order: [["order_index", "ASC"]],

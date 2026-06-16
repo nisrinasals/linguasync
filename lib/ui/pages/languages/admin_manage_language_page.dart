@@ -7,6 +7,7 @@ import '../../../../logic/bloc/language/language_event.dart';
 import '../../../../logic/bloc/language/language_state.dart';
 import '../../pages/languages/language_form_page.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../theme/japandi_theme.dart';
 
 class AdminManageLanguagePage extends StatefulWidget {
   const AdminManageLanguagePage({super.key});
@@ -18,6 +19,7 @@ class AdminManageLanguagePage extends StatefulWidget {
 
 class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -32,6 +34,7 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -42,18 +45,25 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
       if (state is LanguageExploreLoaded && !state.hasReachedMax) {
         BlocProvider.of<LanguageBloc>(
           context,
-        ).add(FetchLanguages(search: state.search, isRefresh: false));
+        ).add(FetchLanguages(search: _searchController.text.trim(), isRefresh: false));
       }
     }
+  }
+
+  void _onSearchChanged(String query) {
+    BlocProvider.of<LanguageBloc>(context)
+        .add(FetchLanguages(search: query.trim(), isRefresh: true));
   }
 
   void _confirmDelete(int id) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Bahasa'),
-        content: const Text(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Hapus Bahasa', style: JT.titleMd),
+        content: Text(
           'Apakah Anda yakin ingin menghapus bahasa ini? Seluruh materi dan kuis di dalamnya akan ikut terhapus.',
+          style: JT.bodySm,
         ),
         actions: [
           TextButton(
@@ -61,13 +71,14 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
             child: const Text('Batal'),
           ),
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: JC.error),
             onPressed: () {
               BlocProvider.of<LanguageBloc>(
                 context,
               ).add(DeleteLanguageRequested(id: id));
               Navigator.pop(context);
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -79,7 +90,7 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Kelola Bahasa (Admin)')),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF2C3E50),
+        backgroundColor: JC.primary,
         onPressed: () {
           Navigator.push(
             context,
@@ -96,128 +107,141 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
             ).showSnackBar(SnackBar(content: Text(state.message)));
             BlocProvider.of<LanguageBloc>(
               context,
-            ).add(const FetchLanguages(isRefresh: true));
+            ).add(FetchLanguages(search: _searchController.text.trim(), isRefresh: true));
           } else if (state is LanguageFailure) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.error)));
           }
         },
-        child: BlocBuilder<LanguageBloc, LanguageState>(
-          builder: (context, state) {
-            if (state is LanguageLoading) {
-              return ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) => const ShimmerLoading(),
-              );
-            }
-
-            if (state is LanguageExploreLoaded) {
-              if (state.languages.isEmpty) {
-                return const Center(
-                  child: Text('Belum ada data bahasa tersedia.'),
-                );
-              }
-
-              return ListView.builder(
-                controller: _scrollController,
-                itemCount: state.hasReachedMax
-                    ? state.languages.length
-                    : state.languages.length + 1,
-                itemBuilder: (context, index) {
-                  if (index >= state.languages.length) {
-                    return const ShimmerLoading();
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                style: const TextStyle(color: JC.ink, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Cari bahasa...',
+                  hintStyle: const TextStyle(color: JC.inkLt, fontSize: 14),
+                  prefixIcon: const Icon(Icons.search, color: JC.inkLt, size: 20),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  filled: true,
+                  fillColor: JC.bgCard,
+                ),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<LanguageBloc, LanguageState>(
+                builder: (context, state) {
+                  if (state is LanguageLoading) {
+                    return ListView.builder(
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const ShimmerLoading(),
+                    );
                   }
 
-                  final language = state.languages[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 6,
-                      horizontal: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      title: Text(
-                        language.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: Text(
-                          language.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.book,
-                              color: Colors.blue,
-                            ), // Akses ke Materi
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AdminManageMaterialPage(
-                                    languageId: language.id,
-                                    languageName: language.name,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.quiz,
-                              color: Colors.green,
-                            ), // Akses ke Kuis
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AdminManageQuizPage(
-                                    languageId: language.id,
-                                    languageName: language.name,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.orange),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      LanguageFormPage(language: language),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _confirmDelete(language.id),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            }
+                  if (state is LanguageExploreLoaded) {
+                    if (state.languages.isEmpty) {
+                      return const Center(
+                        child: Text('Tidak ada bahasa ditemukan.', style: JT.body),
+                      );
+                    }
 
-            return const SizedBox();
-          },
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: state.hasReachedMax
+                          ? state.languages.length
+                          : state.languages.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index >= state.languages.length) {
+                          return const ShimmerLoading();
+                        }
+
+                        final language = state.languages[index];
+                        return Card(
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(12),
+                            title: Text(
+                              language.name,
+                              style: JT.titleMd,
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 6.0),
+                              child: Text(
+                                language.description,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: JT.bodySm,
+                              ),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.book,
+                                    color: JC.primary,
+                                  ), // Akses ke Materi
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AdminManageMaterialPage(
+                                          languageId: language.id,
+                                          languageName: language.name,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.quiz,
+                                    color: JC.clay,
+                                  ), // Akses ke Kuis
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AdminManageQuizPage(
+                                          languageId: language.id,
+                                          languageName: language.name,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.orange),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            LanguageFormPage(language: language),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: JC.error),
+                                  onPressed: () => _confirmDelete(language.id),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

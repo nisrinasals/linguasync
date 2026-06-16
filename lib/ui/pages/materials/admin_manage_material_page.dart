@@ -5,6 +5,7 @@ import '../../../../logic/bloc/material/material_event.dart';
 import '../../../../logic/bloc/material/material_state.dart';
 import '../../pages/materials/material_form_page.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../theme/japandi_theme.dart';
 
 class AdminManageMaterialPage extends StatefulWidget {
   final int languageId;
@@ -23,6 +24,7 @@ class AdminManageMaterialPage extends StatefulWidget {
 
 class _AdminManageMaterialPageState extends State<AdminManageMaterialPage> {
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -37,6 +39,7 @@ class _AdminManageMaterialPageState extends State<AdminManageMaterialPage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -47,18 +50,34 @@ class _AdminManageMaterialPageState extends State<AdminManageMaterialPage> {
       if (state is MaterialListLoaded && !state.hasReachedMax) {
         BlocProvider.of<MaterialBloc>(
           context,
-        ).add(FetchMaterials(languageId: widget.languageId, isRefresh: false));
+        ).add(FetchMaterials(
+          languageId: widget.languageId,
+          search: _searchController.text.trim(),
+          isRefresh: false,
+        ));
       }
     }
+  }
+
+  void _onSearchChanged(String query) {
+    BlocProvider.of<MaterialBloc>(context).add(
+      FetchMaterials(
+        languageId: widget.languageId,
+        search: query.trim(),
+        isRefresh: true,
+      ),
+    );
   }
 
   void _confirmDelete(int id) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Materi'),
-        content: const Text(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Hapus Materi', style: JT.titleMd),
+        content: Text(
           'Apakah Anda yakin ingin menghapus bab materi pembelajaran ini secara permanen?',
+          style: JT.bodySm,
         ),
         actions: [
           TextButton(
@@ -66,13 +85,14 @@ class _AdminManageMaterialPageState extends State<AdminManageMaterialPage> {
             child: const Text('Batal'),
           ),
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: JC.error),
             onPressed: () {
               BlocProvider.of<MaterialBloc>(
                 context,
               ).add(DeleteMaterialRequested(id: id));
               Navigator.pop(context);
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -84,7 +104,7 @@ class _AdminManageMaterialPageState extends State<AdminManageMaterialPage> {
     return Scaffold(
       appBar: AppBar(title: Text('Kelola Materi: ${widget.languageName}')),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF2C3E50),
+        backgroundColor: JC.primary,
         onPressed: () {
           Navigator.push(
             context,
@@ -103,7 +123,11 @@ class _AdminManageMaterialPageState extends State<AdminManageMaterialPage> {
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
             BlocProvider.of<MaterialBloc>(context).add(
-              FetchMaterials(languageId: widget.languageId, isRefresh: true),
+              FetchMaterials(
+                languageId: widget.languageId,
+                search: _searchController.text.trim(),
+                isRefresh: true,
+              ),
             );
           } else if (state is MaterialFailure) {
             ScaffoldMessenger.of(
@@ -111,95 +135,110 @@ class _AdminManageMaterialPageState extends State<AdminManageMaterialPage> {
             ).showSnackBar(SnackBar(content: Text(state.error)));
           }
         },
-        child: BlocBuilder<MaterialBloc, MaterialState>(
-          builder: (context, state) {
-            if (state is MaterialLoading) {
-              return ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) => const ShimmerLoading(),
-              );
-            }
-
-            if (state is MaterialListLoaded) {
-              if (state.materials.isEmpty) {
-                return const Center(
-                  child: Text('Belum ada materi terdaftar untuk bahasa ini.'),
-                );
-              }
-
-              return ListView.builder(
-                controller: _scrollController,
-                itemCount: state.hasReachedMax
-                    ? state.materials.length
-                    : state.materials.length + 1,
-                itemBuilder: (context, index) {
-                  if (index >= state.materials.length) {
-                    return const ShimmerLoading();
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                style: const TextStyle(color: JC.ink, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Cari materi...',
+                  hintStyle: const TextStyle(color: JC.inkLt, fontSize: 14),
+                  prefixIcon: const Icon(Icons.search, color: JC.inkLt, size: 20),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  filled: true,
+                  fillColor: JC.bgCard,
+                ),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<MaterialBloc, MaterialState>(
+                builder: (context, state) {
+                  if (state is MaterialLoading) {
+                    return ListView.builder(
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const ShimmerLoading(),
+                    );
                   }
 
-                  final material = state.materials[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 6,
-                      horizontal: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.grey[200],
-                        child: Text(
-                          material.order.toString(),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      title: Text(
-                        material.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: const Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text('Konten Pembelajaran Teks', maxLines: 1),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.orange),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MaterialFormPage(
-                                    languageId: widget.languageId,
-                                    material: material,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _confirmDelete(material.id),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            }
+                  if (state is MaterialListLoaded) {
+                    if (state.materials.isEmpty) {
+                      return const Center(
+                        child: Text('Tidak ada materi ditemukan.', style: JT.body),
+                      );
+                    }
 
-            return const SizedBox();
-          },
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: state.hasReachedMax
+                          ? state.materials.length
+                          : state.materials.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index >= state.materials.length) {
+                          return const ShimmerLoading();
+                        }
+
+                        final material = state.materials[index];
+                        return Card(
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(12),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: JC.primarySfc,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                material.order.toString(),
+                                style: const TextStyle(
+                                  color: JC.primary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              material.title,
+                              style: JT.titleMd,
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.orange),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MaterialFormPage(
+                                          languageId: widget.languageId,
+                                          material: material,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: JC.error),
+                                  onPressed: () => _confirmDelete(material.id),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

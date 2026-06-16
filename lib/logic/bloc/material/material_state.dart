@@ -17,12 +17,14 @@ class MaterialListLoaded extends MaterialState {
   final int currentPage;
   final bool hasReachedMax;
   final int languageId;
+  final String search;
 
   const MaterialListLoaded({
     required this.materials,
     required this.currentPage,
     required this.hasReachedMax,
     required this.languageId,
+    this.search = '',
   });
 
   MaterialListLoaded copyWith({
@@ -30,12 +32,14 @@ class MaterialListLoaded extends MaterialState {
     int? currentPage,
     bool? hasReachedMax,
     int? languageId,
+    String? search,
   }) {
     return MaterialListLoaded(
       materials: materials ?? this.materials,
       currentPage: currentPage ?? this.currentPage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       languageId: languageId ?? this.languageId,
+      search: search ?? this.search,
     );
   }
 
@@ -45,6 +49,7 @@ class MaterialListLoaded extends MaterialState {
     currentPage,
     hasReachedMax,
     languageId,
+    search,
   ];
 }
 

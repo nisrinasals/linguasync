@@ -10,10 +10,11 @@ class MaterialRepository extends BaseRepository {
 
   Future<Map<String, dynamic>> getMaterialsByLanguage(
     int languageId,
-    int page,
-  ) async {
+    int page, {
+    String search = '',
+  }) async {
     final response = await storageProvider.get(
-      '/materials?language_id=$languageId&page=$page&limit=10',
+      '/materials?language_id=$languageId&page=$page&limit=10&search=${Uri.encodeComponent(search)}',
     );
     handleError(response);
     final body = jsonDecode(response.body);

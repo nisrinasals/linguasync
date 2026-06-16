@@ -6,6 +6,7 @@ import '../../../../logic/bloc/material/material_state.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../pages/quiz/quiz_play_page.dart';
 import '../../theme/japandi_theme.dart';
+import 'material_content_page.dart';
 
 class DetailMaterialPage extends StatefulWidget {
   final int languageId;
@@ -28,8 +29,9 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    BlocProvider.of<MaterialBloc>(context)
-        .add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
+    BlocProvider.of<MaterialBloc>(
+      context,
+    ).add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
   }
 
   @override
@@ -44,89 +46,24 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
         _scrollController.position.maxScrollExtent - 200) {
       final state = BlocProvider.of<MaterialBloc>(context).state;
       if (state is MaterialListLoaded && !state.hasReachedMax) {
-        BlocProvider.of<MaterialBloc>(context)
-            .add(FetchMaterials(languageId: widget.languageId, isRefresh: false));
+        BlocProvider.of<MaterialBloc>(
+          context,
+        ).add(FetchMaterials(languageId: widget.languageId, isRefresh: false));
       }
     }
   }
 
   void _showMaterialContent(int id, String title) {
-    BlocProvider.of<MaterialBloc>(context).add(FetchMaterialDetail(id: id));
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: JC.bgCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MaterialContentPage(materialId: id, title: title),
       ),
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.78,
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: JC.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(title, style: JT.titleLg),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: JC.inkLt, size: 22),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              const Divider(),
-              const SizedBox(height: 12),
-              Expanded(
-                child: BlocBuilder<MaterialBloc, MaterialState>(
-                  builder: (context, state) {
-                    if (state is MaterialLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: JC.primary, strokeWidth: 2),
-                      );
-                    }
-                    if (state is MaterialDetailLoaded) {
-                      return SingleChildScrollView(
-                        child: Text(
-                          state.material.content,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            height: 1.8,
-                            color: JC.ink,
-                          ),
-                        ),
-                      );
-                    }
-                    if (state is MaterialFailure) {
-                      return Center(child: Text(state.error));
-                    }
-                    return const SizedBox();
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     ).then((_) {
-      BlocProvider.of<MaterialBloc>(context)
-          .add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
+      if (!mounted) return;
+      BlocProvider.of<MaterialBloc>(
+        context,
+      ).add(FetchMaterials(languageId: widget.languageId, isRefresh: true));
     });
   }
 
@@ -144,9 +81,17 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
               style: FilledButton.styleFrom(
                 backgroundColor: JC.clay,
                 foregroundColor: Colors.white,
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 0,
+                ),
                 visualDensity: VisualDensity.compact,
               ),
               onPressed: () {
@@ -164,86 +109,92 @@ class _DetailMaterialPageState extends State<DetailMaterialPage> {
           ),
         ],
       ),
-      body: BlocBuilder<MaterialBloc, MaterialState>(
-        builder: (context, state) {
-          if (state is MaterialLoading) {
-            return ListView.builder(
-              itemCount: 5,
-              itemBuilder: (_, __) => const ShimmerLoading(),
-            );
-          }
-
-          if (state is MaterialListLoaded) {
-            if (state.materials.isEmpty) {
-              return const Center(
-                child: Text('Belum ada konten materi untuk bahasa ini.'),
+      body: SafeArea(
+        child: BlocBuilder<MaterialBloc, MaterialState>(
+          builder: (context, state) {
+            if (state is MaterialLoading) {
+              return ListView.builder(
+                itemCount: 5,
+                itemBuilder: (_, __) => const ShimmerLoading(),
               );
             }
 
-            return ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.only(top: 8, bottom: 20),
-              itemCount: state.hasReachedMax
-                  ? state.materials.length
-                  : state.materials.length + 1,
-              itemBuilder: (context, index) {
-                if (index >= state.materials.length) {
-                  return const ShimmerLoading();
-                }
+            if (state is MaterialListLoaded) {
+              if (state.materials.isEmpty) {
+                return const Center(
+                  child: Text('Belum ada konten materi untuk bahasa ini.'),
+                );
+              }
 
-                final material = state.materials[index];
-                return Card(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () => _showMaterialContent(material.id, material.title),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: JC.primarySfc,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              material.order.toString(),
-                              style: const TextStyle(
-                                color: JC.primary,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 15,
+              return ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.only(top: 8, bottom: 20),
+                itemCount: state.hasReachedMax
+                    ? state.materials.length
+                    : state.materials.length + 1,
+                itemBuilder: (context, index) {
+                  if (index >= state.materials.length) {
+                    return const ShimmerLoading();
+                  }
+
+                  final material = state.materials[index];
+                  return Card(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () =>
+                          _showMaterialContent(material.id, material.title),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: JC.primarySfc,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                material.order.toString(),
+                                style: const TextStyle(
+                                  color: JC.primary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(material.title, style: JT.titleMd),
-                                const SizedBox(height: 3),
-                                const Text('Ketuk untuk mulai membaca', style: JT.caption),
-                              ],
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(material.title, style: JT.titleMd),
+                                  const SizedBox(height: 3),
+                                ],
+                              ),
                             ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: JC.inkLt),
-                        ],
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 14,
+                              color: JC.inkLt,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            );
-          }
+                  );
+                },
+              );
+            }
 
-          if (state is MaterialFailure) {
-            return Center(child: Text(state.error));
-          }
+            if (state is MaterialFailure) {
+              return Center(child: Text(state.error));
+            }
 
-          return const SizedBox();
-        },
+            return const SizedBox();
+          },
+        ),
       ),
     );
   }

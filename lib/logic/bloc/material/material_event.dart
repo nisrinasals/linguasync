@@ -9,12 +9,17 @@ abstract class MaterialEvent extends Equatable {
 
 class FetchMaterials extends MaterialEvent {
   final int languageId;
+  final String search;
   final bool isRefresh;
 
-  const FetchMaterials({required this.languageId, this.isRefresh = false});
+  const FetchMaterials({
+    required this.languageId,
+    this.search = '',
+    this.isRefresh = false,
+  });
 
   @override
-  List<Object?> get props => [languageId, isRefresh];
+  List<Object?> get props => [languageId, search, isRefresh];
 }
 
 class FetchMaterialDetail extends MaterialEvent {
