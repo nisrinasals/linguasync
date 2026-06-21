@@ -3,12 +3,14 @@ class UserModel {
   final String name;
   final String email;
   final String role;
+  final String? fotoProfile;
 
   UserModel({
     required this.id,
     required this.name,
     required this.email,
     required this.role,
+    this.fotoProfile,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class UserModel {
       name: json['name'] as String,
       email: json['email'] as String,
       role: json['role'] as String,
+      fotoProfile: json['foto_profile'] as String?,
     );
   }
 
@@ -26,7 +29,24 @@ class UserModel {
       'name': name,
       'email': email,
       'role': role,
+      'foto_profile': fotoProfile,
     };
+  }
+
+  UserModel copyWith({
+    int? id,
+    String? name,
+    String? email,
+    String? role,
+    String? fotoProfile,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      fotoProfile: fotoProfile ?? this.fotoProfile,
+    );
   }
 }
 

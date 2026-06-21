@@ -3,6 +3,7 @@ import 'package:linguasync/ui/pages/languages/explore_languages.dart';
 import 'package:linguasync/ui/pages/languages/my_study_page.dart';
 import 'package:linguasync/ui/pages/leaderboard/global_leaderboard_page.dart';
 import 'package:linguasync/ui/pages/history/user_history_page.dart';
+import 'package:linguasync/ui/pages/profile/profile_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:linguasync/logic/bloc/language/language_bloc.dart';
 import 'package:linguasync/logic/bloc/language/language_event.dart';
@@ -10,6 +11,8 @@ import 'package:linguasync/logic/bloc/leaderboard/leaderboard_bloc.dart';
 import 'package:linguasync/logic/bloc/leaderboard/leaderboard_event.dart';
 import 'package:linguasync/logic/bloc/history/history_bloc.dart';
 import 'package:linguasync/logic/bloc/history/history_event.dart';
+import 'package:linguasync/logic/bloc/profile/profile_bloc.dart';
+import 'package:linguasync/logic/bloc/profile/profile_event.dart';
 import 'package:linguasync/ui/theme/japandi_theme.dart';
 
 class MainNavigationPage extends StatefulWidget {
@@ -33,6 +36,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     const MyStudyPage(),
     const GlobalLeaderboardPage(),
     const UserHistoryPage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -46,6 +50,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       context.read<LeaderboardBloc>().add(const FetchLeaderboard(isRefresh: true));
     } else if (index == 3) {
       context.read<HistoryBloc>().add(const FetchHistory(isRefresh: true));
+    } else if (index == 4) {
+      context.read<ProfileBloc>().add(FetchProfile());
     }
   }
 
@@ -83,6 +89,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               icon: Icon(Icons.history_outlined),
               activeIcon: Icon(Icons.history),
               label: 'Riwayat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profil',
             ),
           ],
         ),

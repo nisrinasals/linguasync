@@ -13,6 +13,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<RegisterSubmitted>(_onRegisterSubmitted);
     on<LogoutRequested>(_onLogoutRequested);
+    on<UserUpdated>(_onUserUpdated);
+  }
+
+  void _onUserUpdated(UserUpdated event, Emitter<AuthState> emit) {
+    emit(Authenticated(user: event.user));
   }
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {

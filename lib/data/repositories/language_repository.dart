@@ -10,10 +10,11 @@ class LanguageRepository extends BaseRepository {
 
   Future<Map<String, dynamic>> exploreLanguages(
     int page, {
+    int limit = 10,
     String search = '',
   }) async {
     final response = await storageProvider.get(
-      '/languages?page=$page&limit=10&search=$search',
+      '/languages?page=$page&limit=$limit&search=$search',
     );
     handleError(response);
     final body = jsonDecode(response.body);

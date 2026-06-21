@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
@@ -85,6 +87,7 @@ const authController = {
             name: user.name,
             email: user.email,
             role: user.role,
+            foto_profile: user.foto_profile,
           },
         },
       });
@@ -92,6 +95,110 @@ const authController = {
       return res.status(500).json({
         status: "error",
         message: "Terjadi kesalahan internal pada server.",
+      });
+    }
+  },
+
+  // Fetch Current Logged-in User Profile details
+  getProfile: async (req, res) => {
+    try {
+      const user = await User.findByPk(req.user.id);
+      if (!user) {
+        return res.status(404).json({
+          status: "fail",
+          message: "Pengguna tidak ditemukan.",
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          foto_profile: user.foto_profile,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        message: "Terjadi kesalahan internal pada server.",
+      });
+    }
+  },
+
+  // Update Current Logged-in User Profile details and handle photo uploads
+  updateProfile: async (req, res) => {
+    try {
+      const user = await User.findByPk(req.user.id);
+      if (!user) {
+        return res.status(404).json({
+          status: "fail",
+          message: "Pengguna tidak ditemukan.",
+        });
+      }
+
+      const { name, email, password } = req.body;
+
+      if (email && email !== user.email) {
+        const existingEmail = await User.findOne({ where: { email } });
+        if (existingEmail) {
+          return res.status(400).json({
+            status: "fail",
+            message: "Email sudah digunakan oleh akun lain.",
+          });
+        }
+        user.email = email;
+      }
+
+      if (name) {
+        user.name = name;
+      }
+
+      if (password && password.trim() !== "") {
+        if (password.length < 6) {
+          return res.status(400).json({
+            status: "fail",
+            message: "Password harus terdiri dari minimal 6 karakter.",
+          });
+        }
+        user.password = await bcrypt.hash(password, 10);
+      }
+
+      if (req.file) {
+        // Delete old profile photo if it exists
+        if (user.foto_profile) {
+          const oldFilePath = path.join(__dirname, "../uploads", user.foto_profile);
+          if (fs.existsSync(oldFilePath)) {
+            try {
+              fs.unlinkSync(oldFilePath);
+            } catch (err) {
+              console.error("Failed to delete old profile photo file:", err);
+            }
+          }
+        }
+        user.foto_profile = req.file.filename;
+      }
+
+      await user.save();
+
+      return res.status(200).json({
+        status: "success",
+        message: "Profil Anda berhasil diperbarui.",
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          foto_profile: user.foto_profile,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        message: "Terjadi kesalahan sistem saat memperbarui profil.",
+        error: error.message,
       });
     }
   },

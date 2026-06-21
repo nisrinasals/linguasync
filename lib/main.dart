@@ -7,6 +7,7 @@ import 'package:linguasync/data/repositories/material_repository.dart';
 import 'package:linguasync/data/repositories/quiz_repository.dart';
 import 'package:linguasync/data/repositories/leaderboard_repository.dart';
 import 'package:linguasync/data/repositories/history_repository.dart';
+import 'package:linguasync/data/repositories/user_repository.dart';
 import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
 import 'package:linguasync/logic/bloc/auth/auth_state.dart';
 import 'package:linguasync/logic/bloc/language/language_bloc.dart';
@@ -18,6 +19,9 @@ import 'package:linguasync/logic/bloc/leaderboard/leaderboard_bloc.dart';
 import 'package:linguasync/logic/bloc/leaderboard/leaderboard_event.dart';
 import 'package:linguasync/logic/bloc/history/history_bloc.dart';
 import 'package:linguasync/logic/bloc/history/history_event.dart';
+import 'package:linguasync/logic/bloc/profile/profile_bloc.dart';
+import 'package:linguasync/logic/bloc/admin_user/admin_user_bloc.dart';
+import 'package:linguasync/logic/bloc/admin_history/admin_history_bloc.dart';
 import 'package:linguasync/logic/debug/bloc_observer.dart';
 import 'package:linguasync/ui/pages/auth/splash_page.dart';
 import 'package:linguasync/ui/pages/auth/login_page.dart';
@@ -65,6 +69,9 @@ class LinguaSyncApp extends StatelessWidget {
         RepositoryProvider<HistoryRepository>(
           create: (context) => HistoryRepository(storageProvider: storageProvider),
         ),
+        RepositoryProvider<UserRepository>(
+          create: (context) => UserRepository(storageProvider: storageProvider),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -95,6 +102,21 @@ class LinguaSyncApp extends StatelessWidget {
           ),
           BlocProvider<HistoryBloc>(
             create: (context) => HistoryBloc(
+              historyRepository: RepositoryProvider.of<HistoryRepository>(context),
+            ),
+          ),
+          BlocProvider<ProfileBloc>(
+            create: (context) => ProfileBloc(
+              authRepository: RepositoryProvider.of<AuthRepository>(context),
+            ),
+          ),
+          BlocProvider<AdminUserBloc>(
+            create: (context) => AdminUserBloc(
+              userRepository: RepositoryProvider.of<UserRepository>(context),
+            ),
+          ),
+          BlocProvider<AdminHistoryBloc>(
+            create: (context) => AdminHistoryBloc(
               historyRepository: RepositoryProvider.of<HistoryRepository>(context),
             ),
           ),
