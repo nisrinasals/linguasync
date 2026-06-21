@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../logic/bloc/quiz/quiz_bloc.dart';
-import '../../../../logic/bloc/quiz/quiz_event.dart';
-import '../../../../logic/bloc/quiz/quiz_state.dart';
-import '../../pages/quiz/quiz_form_page.dart';
+import '../../../../logic/bloc/admin_quiz/admin_quiz_bloc.dart';
+import '../../../../logic/bloc/admin_quiz/admin_quiz_event.dart';
+import '../../../../logic/bloc/admin_quiz/admin_quiz_state.dart';
+import 'quiz_form_page.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../theme/japandi_theme.dart';
 
 class AdminManageQuizPage extends StatefulWidget {
   final int languageId;
@@ -28,9 +29,9 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    BlocProvider.of<QuizBloc>(
-      context,
-    ).add(FetchAdminQuizzes(languageId: widget.languageId, isRefresh: true));
+    context.read<AdminQuizBloc>().add(
+      FetchAdminQuizzes(languageId: widget.languageId, isRefresh: true),
+    );
   }
 
   @override
@@ -44,9 +45,9 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      final state = BlocProvider.of<QuizBloc>(context).state;
-      if (state is QuizAdminListLoaded && !state.hasReachedMax) {
-        BlocProvider.of<QuizBloc>(context).add(
+      final state = context.read<AdminQuizBloc>().state;
+      if (state is AdminQuizListLoaded && !state.hasReachedMax) {
+        context.read<AdminQuizBloc>().add(
           FetchAdminQuizzes(
             languageId: widget.languageId,
             search: _searchController.text.trim(),
@@ -58,7 +59,7 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
   }
 
   void _onSearchChanged(String query) {
-    BlocProvider.of<QuizBloc>(context).add(
+    context.read<AdminQuizBloc>().add(
       FetchAdminQuizzes(
         languageId: widget.languageId,
         search: query.trim(),
@@ -71,9 +72,11 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Soal'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Hapus Soal', style: JT.titleMd),
         content: const Text(
           'Apakah Anda yakin ingin menghapus pertanyaan kuis ini secara permanen?',
+          style: JT.bodySm,
         ),
         actions: [
           TextButton(
@@ -81,13 +84,12 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
             child: const Text('Batal'),
           ),
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: JC.error),
             onPressed: () {
-              BlocProvider.of<QuizBloc>(
-                context,
-              ).add(DeleteQuizQuestionRequested(id: id));
+              context.read<AdminQuizBloc>().add(DeleteQuizQuestionRequested(id: id));
               Navigator.pop(context);
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -97,9 +99,14 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Kelola Kuis: ${widget.languageName}')),
+      appBar: AppBar(
+        title: Text(
+          'Kelola Kuis: ${widget.languageName}',
+          style: JT.titleLg,
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF2C3E50),
+        backgroundColor: JC.primary,
         onPressed: () {
           Navigator.push(
             context,
@@ -110,23 +117,26 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: BlocListener<QuizBloc, QuizState>(
+      body: BlocListener<AdminQuizBloc, AdminQuizState>(
         listener: (context, state) {
-          if (state is QuizOperationSuccess) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-            BlocProvider.of<QuizBloc>(context).add(
+          if (state is AdminQuizOperationSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+            context.read<AdminQuizBloc>().add(
               FetchAdminQuizzes(
                 languageId: widget.languageId,
                 search: _searchController.text.trim(),
                 isRefresh: true,
               ),
             );
-          } else if (state is QuizFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error)));
+          } else if (state is AdminQuizFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error),
+                backgroundColor: JC.error,
+              ),
+            );
           }
         },
         child: Column(
@@ -136,37 +146,37 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
               child: TextField(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
-                style: const TextStyle(fontSize: 14),
+                style: const TextStyle(color: JC.ink, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Cari soal kuis...',
-                  prefixIcon: const Icon(Icons.search, size: 20),
+                  hintStyle: const TextStyle(color: JC.inkLt, fontSize: 14),
+                  prefixIcon: const Icon(Icons.search, color: JC.inkLt, size: 20),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
                   filled: true,
-                  fillColor: Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
+                  fillColor: JC.bgCard,
                 ),
               ),
             ),
             Expanded(
-              child: BlocBuilder<QuizBloc, QuizState>(
+              child: BlocBuilder<AdminQuizBloc, AdminQuizState>(
                 builder: (context, state) {
-                  if (state is QuizLoading) {
+                  if (state is AdminQuizLoading) {
                     return ListView.builder(
                       itemCount: 5,
                       itemBuilder: (context, index) => const ShimmerLoading(),
                     );
                   }
 
-                  if (state is QuizAdminListLoaded) {
+                  if (state is AdminQuizListLoaded) {
                     if (state.questions.isEmpty) {
                       return const Center(
-                        child: Text('Tidak ada soal kuis ditemukan.'),
+                        child: Text(
+                          'Tidak ada soal kuis ditemukan.',
+                          style: JT.body,
+                        ),
                       );
                     }
 
@@ -182,29 +192,20 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
 
                         final quiz = state.questions[index];
                         return Card(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 6,
-                            horizontal: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.all(12),
                             title: Text(
                               quiz.question,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: JT.titleMd,
                             ),
                             subtitle: Padding(
                               padding: const EdgeInsets.only(top: 6.0),
                               child: Text(
                                 'Kunci Jawaban: Opsi ${quiz.answer.toUpperCase()}',
                                 style: const TextStyle(
-                                  color: Colors.green,
+                                  color: JC.success,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -232,7 +233,7 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
                                 IconButton(
                                   icon: const Icon(
                                     Icons.delete,
-                                    color: Colors.red,
+                                    color: JC.error,
                                   ),
                                   onPressed: () => _confirmDelete(quiz.id),
                                 ),

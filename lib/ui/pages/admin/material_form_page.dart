@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../data/models/material_model.dart';
 import '../../../../logic/bloc/material/material_bloc.dart';
 import '../../../../logic/bloc/material/material_event.dart';
-import '../../../../logic/bloc/material/material_state.dart';
+import '../../../../logic/bloc/admin_material/admin_material_bloc.dart';
+import '../../../../logic/bloc/admin_material/admin_material_event.dart';
+import '../../../../logic/bloc/admin_material/admin_material_state.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../theme/japandi_theme.dart';
 
 class MaterialFormPage extends StatefulWidget {
   final int languageId;
@@ -49,7 +52,7 @@ class _MaterialFormPageState extends State<MaterialFormPage> {
     if (_formKey.currentState!.validate()) {
       final orderVal = int.tryParse(_orderController.text) ?? 1;
       if (widget.material == null) {
-        BlocProvider.of<MaterialBloc>(context).add(
+        context.read<AdminMaterialBloc>().add(
           CreateMaterialRequested(
             languageId: widget.languageId,
             title: _titleController.text.trim(),
@@ -58,7 +61,7 @@ class _MaterialFormPageState extends State<MaterialFormPage> {
           ),
         );
       } else {
-        BlocProvider.of<MaterialBloc>(context).add(
+        context.read<AdminMaterialBloc>().add(
           UpdateMaterialRequested(
             id: widget.material!.id,
             title: _titleController.text.trim(),
@@ -74,22 +77,29 @@ class _MaterialFormPageState extends State<MaterialFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.material == null ? 'Tambah Materi' : 'Edit Materi'),
+        title: Text(
+          widget.material == null ? 'Tambah Materi' : 'Edit Materi',
+          style: JT.titleLg,
+        ),
       ),
-      body: BlocListener<MaterialBloc, MaterialState>(
+      body: BlocListener<AdminMaterialBloc, AdminMaterialState>(
         listener: (context, state) {
-          if (state is MaterialOperationSuccess) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-            BlocProvider.of<MaterialBloc>(context).add(
+          if (state is AdminMaterialOperationSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+            // Refresh list in MaterialBloc
+            context.read<MaterialBloc>().add(
               FetchMaterials(languageId: widget.languageId, isRefresh: true),
             );
             Navigator.pop(context);
-          } else if (state is MaterialFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error)));
+          } else if (state is AdminMaterialFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error),
+                backgroundColor: JC.error,
+              ),
+            );
           }
         },
         child: Form(
@@ -123,14 +133,14 @@ class _MaterialFormPageState extends State<MaterialFormPage> {
                     : null,
               ),
               const SizedBox(height: 32),
-              BlocBuilder<MaterialBloc, MaterialState>(
+              BlocBuilder<AdminMaterialBloc, AdminMaterialState>(
                 builder: (context, state) {
                   return CustomButton(
                     onPressed: _submit,
                     text: widget.material == null
                         ? 'Simpan Materi'
                         : 'Perbarui Materi',
-                    isLoading: state is MaterialLoading,
+                    isLoading: state is AdminMaterialLoading,
                   );
                 },
               ),

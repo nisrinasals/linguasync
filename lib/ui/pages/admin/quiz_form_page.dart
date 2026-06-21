@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../data/models/quiz_model.dart';
-import '../../../../logic/bloc/quiz/quiz_bloc.dart';
-import '../../../../logic/bloc/quiz/quiz_event.dart';
-import '../../../../logic/bloc/quiz/quiz_state.dart';
+import '../../../../logic/bloc/admin_quiz/admin_quiz_bloc.dart';
+import '../../../../logic/bloc/admin_quiz/admin_quiz_event.dart';
+import '../../../../logic/bloc/admin_quiz/admin_quiz_state.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../theme/japandi_theme.dart';
 
 class QuizFormPage extends StatefulWidget {
   final int languageId;
@@ -50,7 +51,7 @@ class _QuizFormPageState extends State<QuizFormPage> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       if (widget.quiz == null) {
-        BlocProvider.of<QuizBloc>(context).add(
+        context.read<AdminQuizBloc>().add(
           CreateQuizQuestionRequested(
             languageId: widget.languageId,
             question: _questionController.text.trim(),
@@ -62,7 +63,7 @@ class _QuizFormPageState extends State<QuizFormPage> {
           ),
         );
       } else {
-        BlocProvider.of<QuizBloc>(context).add(
+        context.read<AdminQuizBloc>().add(
           UpdateQuizQuestionRequested(
             id: widget.quiz!.id,
             question: _questionController.text.trim(),
@@ -81,19 +82,31 @@ class _QuizFormPageState extends State<QuizFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.quiz == null ? 'Tambah Soal Kuis' : 'Edit Soal Kuis'),
+        title: Text(
+          widget.quiz == null ? 'Tambah Soal Kuis' : 'Edit Soal Kuis',
+          style: JT.titleLg,
+        ),
       ),
-      body: BlocListener<QuizBloc, QuizState>(
+      body: BlocListener<AdminQuizBloc, AdminQuizState>(
         listener: (context, state) {
-          if (state is QuizOperationSuccess) {
+          if (state is AdminQuizOperationSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
-            BlocProvider.of<QuizBloc>(context).add(FetchAdminQuizzes(languageId: widget.languageId, isRefresh: true));
+            // Refresh list in AdminQuizBloc
+            context.read<AdminQuizBloc>().add(
+              FetchAdminQuizzes(
+                languageId: widget.languageId,
+                isRefresh: true,
+              ),
+            );
             Navigator.pop(context);
-          } else if (state is QuizFailure) {
+          } else if (state is AdminQuizFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error)),
+              SnackBar(
+                content: Text(state.error),
+                backgroundColor: JC.error,
+              ),
             );
           }
         },
@@ -135,9 +148,10 @@ class _QuizFormPageState extends State<QuizFormPage> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedAnswer,
+                dropdownColor: JC.bgCard,
+                style: JT.body.copyWith(fontWeight: FontWeight.w600),
                 decoration: const InputDecoration(
                   labelText: 'Kunci Jawaban yang Benar',
-                  border: OutlineInputBorder(),
                 ),
                 items: ['A', 'B', 'C', 'D'].map((String value) {
                   return DropdownMenuItem<String>(
@@ -152,12 +166,12 @@ class _QuizFormPageState extends State<QuizFormPage> {
                 },
               ),
               const SizedBox(height: 32),
-              BlocBuilder<QuizBloc, QuizState>(
+              BlocBuilder<AdminQuizBloc, AdminQuizState>(
                 builder: (context, state) {
                   return CustomButton(
                     onPressed: _submit,
                     text: widget.quiz == null ? 'Simpan Pertanyaan' : 'Perbarui Pertanyaan',
-                    isLoading: state is QuizLoading,
+                    isLoading: state is AdminQuizLoading,
                   );
                 },
               ),

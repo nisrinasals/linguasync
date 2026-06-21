@@ -44,41 +44,4 @@ class UnenrollLanguageRequested extends LanguageEvent {
   List<Object?> get props => [enrollmentId];
 }
 
-class CreateLanguageRequested extends LanguageEvent {
-  final String name;
-  final String description;
-
-  const CreateLanguageRequested({
-    required this.name,
-    required this.description,
-  });
-
-  @override
-  List<Object?> get props => [name, description];
-}
-
-class UpdateLanguageRequested extends LanguageEvent {
-  final int id;
-  final String name;
-  final String description;
-
-  const UpdateLanguageRequested({
-    required this.id,
-    required this.name,
-    required this.description,
-  });
-
-  @override
-  List<Object?> get props => [id, name, description];
-}
-
-class DeleteLanguageRequested extends LanguageEvent {
-  final int id;
-
-  const DeleteLanguageRequested({required this.id});
-
-  @override
-  List<Object?> get props => [id];
-}
-
 class ResetLanguageData extends LanguageEvent {}

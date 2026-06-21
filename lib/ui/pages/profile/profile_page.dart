@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../data/models/auth_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../logic/bloc/auth/auth_bloc.dart';
 import '../../../logic/bloc/auth/auth_event.dart';
@@ -27,6 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   
   String? _pickedFilePath;
   bool _isInit = false;
+  UserModel? _currentUser;
 
   @override
   void initState() {
@@ -84,12 +86,16 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
-          if (state is ProfileLoaded && !_isInit) {
-            _nameController.text = state.user.name;
-            _emailController.text = state.user.email;
-            _isInit = true;
+          if (state is ProfileLoaded) {
+            _currentUser = state.user;
+            if (!_isInit) {
+              _nameController.text = state.user.name;
+              _emailController.text = state.user.email;
+              _isInit = true;
+            }
           }
           if (state is ProfileUpdateSuccess) {
+            _currentUser = state.user;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -107,17 +113,12 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         },
         builder: (context, state) {
-          if (state is ProfileLoading && !_isInit) {
+          if (state is ProfileLoading && _currentUser == null) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is ProfileLoaded || state is ProfileUpdateSuccess || (state is ProfileLoading && _isInit)) {
-            final user = (state is ProfileLoaded)
-                ? state.user
-                : (state is ProfileUpdateSuccess)
-                    ? state.user
-                    : (context.read<ProfileBloc>().state as ProfileLoaded).user;
-
+          if (_currentUser != null) {
+            final user = _currentUser!;
             final storageProvider = context.read<AuthRepository>().storageProvider;
             final isSaving = state is ProfileLoading;
 

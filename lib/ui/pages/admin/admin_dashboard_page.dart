@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
 import '../../../logic/bloc/auth/auth_event.dart';
-import '../../pages/languages/admin_manage_language_page.dart';
+import 'admin_manage_language_page.dart';
 import 'admin_manage_user_page.dart';
 import 'admin_manage_history_page.dart';
 

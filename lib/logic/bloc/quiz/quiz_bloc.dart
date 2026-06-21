@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repositories/quiz_repository.dart';
-import '../../../data/models/quiz_model.dart';
 import 'quiz_event.dart';
 import 'quiz_state.dart';
 
@@ -14,10 +13,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     on<QuizTimerTicked>(_onQuizTimerTicked);
     on<AnswerSelected>(_onAnswerSelected);
     on<SubmitQuizResultRequested>(_onSubmitQuizResultRequested);
-    on<FetchAdminQuizzes>(_onFetchAdminQuizzes);
-    on<CreateQuizQuestionRequested>(_onCreateQuizQuestionRequested);
-    on<UpdateQuizQuestionRequested>(_onUpdateQuizQuestionRequested);
-    on<DeleteQuizQuestionRequested>(_onDeleteQuizQuestionRequested);
     on<ResetQuizData>(_onResetQuizData);
   }
 
@@ -145,161 +140,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         event.languageId,
         event.score,
       );
-      emit(QuizOperationSuccess(message: message));
-    } catch (e) {
-      emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onFetchAdminQuizzes(
-    FetchAdminQuizzes event,
-    Emitter<QuizState> emit,
-  ) async {
-    final currentState = state;
-
-    bool shouldReset =
-        event.isRefresh ||
-        (currentState is QuizAdminListLoaded &&
-            currentState.search != event.search);
-
-    if (!shouldReset && currentState is QuizAdminListLoaded) {
-      if (currentState.languageId == event.languageId &&
-          currentState.hasReachedMax)
-        return;
-
-      try {
-        final pageToFetch = currentState.currentPage + 1;
-        final result = await quizRepository.adminGetQuestions(
-          event.languageId,
-          pageToFetch,
-          search: currentState.search,
-        );
-        final questions = result['data'] as List<QuizModel>;
-        final totalPages = result['totalPages'] as int;
-
-        emit(
-          currentState.copyWith(
-            questions: List.of(currentState.questions)..addAll(questions),
-            currentPage: pageToFetch,
-            hasReachedMax: pageToFetch >= totalPages,
-          ),
-        );
-      } catch (e) {
-        emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
-      }
-    } else {
-      emit(QuizLoading());
-      try {
-        final result = await quizRepository.adminGetQuestions(
-          event.languageId,
-          1,
-          search: event.search,
-        );
-        final questions = result['data'] as List<QuizModel>;
-        final totalPages = result['totalPages'] as int;
-
-        emit(
-          QuizAdminListLoaded(
-            questions: questions,
-            currentPage: 1,
-            hasReachedMax: 1 >= totalPages,
-            languageId: event.languageId,
-            search: event.search,
-          ),
-        );
-      } catch (e) {
-        emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
-      }
-    }
-  }
-
-  Future<void> _onCreateQuizQuestionRequested(
-    CreateQuizQuestionRequested event,
-    Emitter<QuizState> emit,
-  ) async {
-    emit(QuizLoading());
-    final optA = event.optA.trim().toLowerCase();
-    final optB = event.optB.trim().toLowerCase();
-    final optC = event.optC.trim().toLowerCase();
-    final optD = event.optD.trim().toLowerCase();
-
-    final uniqueOptions = {optA, optB, optC, optD};
-    if (uniqueOptions.length < 4) {
-      emit(
-        const QuizFailure(
-          error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.',
-        ),
-      );
-      return;
-    }
-
-    try {
-      await quizRepository.adminCreateQuestion(
-        event.languageId,
-        event.question,
-        event.optA,
-        event.optB,
-        event.optC,
-        event.optD,
-        event.answer,
-      );
-      emit(
-        const QuizOperationSuccess(
-          message: 'Pertanyaan kuis baru berhasil ditambahkan.',
-        ),
-      );
-    } catch (e) {
-      emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onUpdateQuizQuestionRequested(
-    UpdateQuizQuestionRequested event,
-    Emitter<QuizState> emit,
-  ) async {
-    emit(QuizLoading());
-    final optA = event.optA.trim().toLowerCase();
-    final optB = event.optB.trim().toLowerCase();
-    final optC = event.optC.trim().toLowerCase();
-    final optD = event.optD.trim().toLowerCase();
-
-    final uniqueOptions = {optA, optB, optC, optD};
-    if (uniqueOptions.length < 4) {
-      emit(
-        const QuizFailure(
-          error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.',
-        ),
-      );
-      return;
-    }
-
-    try {
-      await quizRepository.adminUpdateQuestion(
-        event.id,
-        event.question,
-        event.optA,
-        event.optB,
-        event.optC,
-        event.optD,
-        event.answer,
-      );
-      emit(
-        const QuizOperationSuccess(
-          message: 'Pertanyaan kuis berhasil diperbarui.',
-        ),
-      );
-    } catch (e) {
-      emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onDeleteQuizQuestionRequested(
-    DeleteQuizQuestionRequested event,
-    Emitter<QuizState> emit,
-  ) async {
-    emit(QuizLoading());
-    try {
-      final message = await quizRepository.adminDeleteQuestion(event.id);
       emit(QuizOperationSuccess(message: message));
     } catch (e) {
       emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));

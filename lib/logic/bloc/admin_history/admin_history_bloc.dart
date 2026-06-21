@@ -19,7 +19,11 @@ class AdminHistoryBloc extends Bloc<AdminHistoryEvent, AdminHistoryState> {
     if (event.isRefresh) {
       emit(AdminHistoryLoading());
       try {
-        final result = await historyRepository.getHistoriesAdmin(1, search: event.search);
+        final result = await historyRepository.getHistoriesAdmin(
+          1,
+          search: event.search,
+          languageId: event.languageId,
+        );
         final list = result['data'] as List<HistoryModel>;
         final totalPages = result['totalPages'] as int;
         emit(AdminHistoryLoaded(
@@ -27,6 +31,7 @@ class AdminHistoryBloc extends Bloc<AdminHistoryEvent, AdminHistoryState> {
           hasReachedMax: 1 >= totalPages,
           currentPage: 1,
           search: event.search,
+          languageId: event.languageId,
         ));
       } catch (e) {
         emit(AdminHistoryFailure(error: e.toString().replaceAll('Exception: ', '')));
@@ -35,7 +40,11 @@ class AdminHistoryBloc extends Bloc<AdminHistoryEvent, AdminHistoryState> {
       if (currentState is AdminHistoryLoaded && !currentState.hasReachedMax) {
         try {
           final nextPage = currentState.currentPage + 1;
-          final result = await historyRepository.getHistoriesAdmin(nextPage, search: currentState.search);
+          final result = await historyRepository.getHistoriesAdmin(
+            nextPage,
+            search: currentState.search,
+            languageId: currentState.languageId,
+          );
           final list = result['data'] as List<HistoryModel>;
           final totalPages = result['totalPages'] as int;
           emit(AdminHistoryLoaded(
@@ -43,6 +52,7 @@ class AdminHistoryBloc extends Bloc<AdminHistoryEvent, AdminHistoryState> {
             hasReachedMax: nextPage >= totalPages,
             currentPage: nextPage,
             search: currentState.search,
+            languageId: currentState.languageId,
           ));
         } catch (e) {
           emit(AdminHistoryFailure(error: e.toString().replaceAll('Exception: ', '')));

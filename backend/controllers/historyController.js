@@ -53,6 +53,7 @@ const historyController = {
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
       const search = req.query.search || "";
+      const languageId = req.query.language_id || "";
 
       const whereClause = {};
       if (search) {
@@ -60,6 +61,10 @@ const historyController = {
           { "$User.username$": { [Op.like]: `%${search}%` } },
           { "$Language.name$": { [Op.like]: `%${search}%` } },
         ];
+      }
+
+      if (languageId) {
+        whereClause.language_id = languageId;
       }
 
       const { count, rows } = await QuizHistory.findAndCountAll({

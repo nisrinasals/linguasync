@@ -10,14 +10,16 @@ abstract class AdminHistoryEvent extends Equatable {
 class FetchAdminHistory extends AdminHistoryEvent {
   final String search;
   final bool isRefresh;
+  final int? languageId;
 
   const FetchAdminHistory({
     this.search = '',
     required this.isRefresh,
+    this.languageId,
   });
 
   @override
-  List<Object?> get props => [search, isRefresh];
+  List<Object?> get props => [search, isRefresh, languageId];
 }
 
 class CreateAdminHistory extends AdminHistoryEvent {

@@ -6,6 +6,8 @@ import '../../../logic/bloc/admin_history/admin_history_state.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../theme/japandi_theme.dart';
 import 'history_form_page.dart';
+import '../../../data/models/language_model.dart';
+import '../../../data/repositories/language_repository.dart';
 
 class AdminManageHistoryPage extends StatefulWidget {
   const AdminManageHistoryPage({super.key});
@@ -17,11 +19,15 @@ class AdminManageHistoryPage extends StatefulWidget {
 class _AdminManageHistoryPageState extends State<AdminManageHistoryPage> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
+  List<LanguageModel> _languages = [];
+  int? _selectedLanguageId;
+  bool _isLoadingLanguages = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _loadLanguages();
     BlocProvider.of<AdminHistoryBloc>(context).add(
       const FetchAdminHistory(isRefresh: true),
     );
@@ -35,6 +41,24 @@ class _AdminManageHistoryPageState extends State<AdminManageHistoryPage> {
     super.dispose();
   }
 
+  Future<void> _loadLanguages() async {
+    setState(() {
+      _isLoadingLanguages = true;
+    });
+    try {
+      final repo = context.read<LanguageRepository>();
+      final result = await repo.exploreLanguages(1, limit: 100);
+      setState(() {
+        _languages = result['data'] as List<LanguageModel>;
+        _isLoadingLanguages = false;
+      });
+    } catch (_) {
+      setState(() {
+        _isLoadingLanguages = false;
+      });
+    }
+  }
+
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
@@ -44,6 +68,7 @@ class _AdminManageHistoryPageState extends State<AdminManageHistoryPage> {
           FetchAdminHistory(
             search: _searchController.text.trim(),
             isRefresh: false,
+            languageId: _selectedLanguageId,
           ),
         );
       }
@@ -55,6 +80,7 @@ class _AdminManageHistoryPageState extends State<AdminManageHistoryPage> {
       FetchAdminHistory(
         search: query.trim(),
         isRefresh: true,
+        languageId: _selectedLanguageId,
       ),
     );
   }
@@ -115,6 +141,7 @@ class _AdminManageHistoryPageState extends State<AdminManageHistoryPage> {
               FetchAdminHistory(
                 search: _searchController.text.trim(),
                 isRefresh: true,
+                languageId: _selectedLanguageId,
               ),
             );
           } else if (state is AdminHistoryFailure) {
@@ -125,9 +152,49 @@ class _AdminManageHistoryPageState extends State<AdminManageHistoryPage> {
         },
         child: Column(
           children: [
+            // Dropdown Filter Bahasa
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: DropdownButtonFormField<int?>(
+                value: _selectedLanguageId,
+                dropdownColor: JC.bgCard,
+                style: JT.body.copyWith(fontWeight: FontWeight.w600),
+                decoration: const InputDecoration(
+                  labelText: 'Filter Bahasa',
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                items: [
+                  const DropdownMenuItem<int?>(
+                    value: null,
+                    child: Text('Semua Bahasa'),
+                  ),
+                  ..._languages.map((lang) {
+                    return DropdownMenuItem<int?>(
+                      value: lang.id,
+                      child: Text(lang.name),
+                    );
+                  }),
+                ],
+                onChanged: _isLoadingLanguages
+                    ? null
+                    : (val) {
+                        setState(() {
+                          _selectedLanguageId = val;
+                        });
+                        BlocProvider.of<AdminHistoryBloc>(context).add(
+                          FetchAdminHistory(
+                            search: _searchController.text.trim(),
+                            isRefresh: true,
+                            languageId: val,
+                          ),
+                        );
+                      },
+              ),
+            ),
+
             // Search Bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: TextField(
                 controller: _searchController,
                 onChanged: _onSearchChanged,

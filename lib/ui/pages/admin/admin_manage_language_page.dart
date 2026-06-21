@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../pages/materials/admin_manage_material_page.dart';
-import '../../pages/quiz/admin_manage_quiz.dart';
-import '../../../../logic/bloc/language/language_bloc.dart';
-import '../../../../logic/bloc/language/language_event.dart';
-import '../../../../logic/bloc/language/language_state.dart';
-import '../../pages/languages/language_form_page.dart';
+import 'admin_manage_material_page.dart';
+import 'admin_manage_quiz_page.dart';
+import '../../../logic/bloc/language/language_bloc.dart';
+import '../../../logic/bloc/language/language_event.dart';
+import '../../../logic/bloc/language/language_state.dart';
+import '../../../logic/bloc/admin_language/admin_language_bloc.dart';
+import '../../../logic/bloc/admin_language/admin_language_event.dart';
+import '../../../logic/bloc/admin_language/admin_language_state.dart';
+import 'language_form_page.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../theme/japandi_theme.dart';
 
@@ -55,14 +58,14 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
         .add(FetchLanguages(search: query.trim(), isRefresh: true));
   }
 
-  void _confirmDelete(int id) {
+  void _confirmDelete(int id, String name) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Hapus Bahasa', style: JT.titleMd),
         content: Text(
-          'Apakah Anda yakin ingin menghapus bahasa ini? Seluruh materi dan kuis di dalamnya akan ikut terhapus.',
+          'Apakah Anda yakin ingin menghapus bahasa "$name"? Seluruh materi dan kuis di dalamnya akan ikut terhapus.',
           style: JT.bodySm,
         ),
         actions: [
@@ -73,7 +76,7 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
           TextButton(
             style: TextButton.styleFrom(foregroundColor: JC.error),
             onPressed: () {
-              BlocProvider.of<LanguageBloc>(
+              BlocProvider.of<AdminLanguageBloc>(
                 context,
               ).add(DeleteLanguageRequested(id: id));
               Navigator.pop(context);
@@ -99,21 +102,25 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: BlocListener<LanguageBloc, LanguageState>(
-        listener: (context, state) {
-          if (state is LanguageOperationSuccess) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-            BlocProvider.of<LanguageBloc>(
-              context,
-            ).add(FetchLanguages(search: _searchController.text.trim(), isRefresh: true));
-          } else if (state is LanguageFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error)));
-          }
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<AdminLanguageBloc, AdminLanguageState>(
+            listener: (context, state) {
+              if (state is AdminLanguageOperationSuccess) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+                BlocProvider.of<LanguageBloc>(
+                  context,
+                ).add(FetchLanguages(search: _searchController.text.trim(), isRefresh: true));
+              } else if (state is AdminLanguageFailure) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.error), backgroundColor: JC.error));
+              }
+            },
+          ),
+        ],
         child: Column(
           children: [
             Padding(
@@ -227,7 +234,7 @@ class _AdminManageLanguagePageState extends State<AdminManageLanguagePage> {
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete, color: JC.error),
-                                  onPressed: () => _confirmDelete(language.id),
+                                  onPressed: () => _confirmDelete(language.id, language.name),
                                 ),
                               ],
                             ),

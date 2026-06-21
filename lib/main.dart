@@ -22,6 +22,9 @@ import 'package:linguasync/logic/bloc/history/history_event.dart';
 import 'package:linguasync/logic/bloc/profile/profile_bloc.dart';
 import 'package:linguasync/logic/bloc/admin_user/admin_user_bloc.dart';
 import 'package:linguasync/logic/bloc/admin_history/admin_history_bloc.dart';
+import 'package:linguasync/logic/bloc/admin_language/admin_language_bloc.dart';
+import 'package:linguasync/logic/bloc/admin_material/admin_material_bloc.dart';
+import 'package:linguasync/logic/bloc/admin_quiz/admin_quiz_bloc.dart';
 import 'package:linguasync/logic/debug/bloc_observer.dart';
 import 'package:linguasync/ui/pages/auth/splash_page.dart';
 import 'package:linguasync/ui/pages/auth/login_page.dart';
@@ -29,7 +32,7 @@ import 'package:linguasync/ui/pages/auth/register_page.dart';
 import 'package:linguasync/ui/pages/languages/explore_languages.dart';
 import 'package:linguasync/ui/pages/languages/my_study_page.dart';
 import 'package:linguasync/ui/pages/main_navigation_page.dart';
-import 'package:linguasync/ui/pages/languages/admin_manage_language_page.dart';
+import 'package:linguasync/ui/pages/admin/admin_manage_language_page.dart';
 import 'package:linguasync/ui/pages/leaderboard/global_leaderboard_page.dart';
 import 'package:linguasync/ui/pages/history/user_history_page.dart';
 import 'package:linguasync/ui/pages/admin/admin_dashboard_page.dart';
@@ -118,6 +121,21 @@ class LinguaSyncApp extends StatelessWidget {
           BlocProvider<AdminHistoryBloc>(
             create: (context) => AdminHistoryBloc(
               historyRepository: RepositoryProvider.of<HistoryRepository>(context),
+            ),
+          ),
+          BlocProvider<AdminLanguageBloc>(
+            create: (context) => AdminLanguageBloc(
+              languageRepository: RepositoryProvider.of<LanguageRepository>(context),
+            ),
+          ),
+          BlocProvider<AdminMaterialBloc>(
+            create: (context) => AdminMaterialBloc(
+              materialRepository: RepositoryProvider.of<MaterialRepository>(context),
+            ),
+          ),
+          BlocProvider<AdminQuizBloc>(
+            create: (context) => AdminQuizBloc(
+              quizRepository: RepositoryProvider.of<QuizRepository>(context),
             ),
           ),
         ],

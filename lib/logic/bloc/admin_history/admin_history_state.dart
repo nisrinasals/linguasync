@@ -17,28 +17,32 @@ class AdminHistoryLoaded extends AdminHistoryState {
   final bool hasReachedMax;
   final int currentPage;
   final String search;
+  final int? languageId;
 
   const AdminHistoryLoaded({
     required this.histories,
     required this.hasReachedMax,
     required this.currentPage,
     required this.search,
+    this.languageId,
   });
 
   @override
-  List<Object?> get props => [histories, hasReachedMax, currentPage, search];
+  List<Object?> get props => [histories, hasReachedMax, currentPage, search, languageId];
 
   AdminHistoryLoaded copyWith({
     List<HistoryModel>? histories,
     bool? hasReachedMax,
     int? currentPage,
     String? search,
+    int? languageId,
   }) {
     return AdminHistoryLoaded(
       histories: histories ?? this.histories,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       currentPage: currentPage ?? this.currentPage,
       search: search ?? this.search,
+      languageId: languageId ?? this.languageId,
     );
   }
 }

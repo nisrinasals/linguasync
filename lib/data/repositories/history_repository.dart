@@ -26,9 +26,11 @@ class HistoryRepository extends BaseRepository {
   Future<Map<String, dynamic>> getHistoriesAdmin(
     int page, {
     String search = '',
+    int? languageId,
   }) async {
+    final langQuery = languageId != null ? '&language_id=$languageId' : '';
     final response = await storageProvider.get(
-      '/history/admin?page=$page&limit=10&search=${Uri.encodeComponent(search)}',
+      '/history/admin?page=$page&limit=10&search=${Uri.encodeComponent(search)}$langQuery',
     );
     handleError(response);
     final body = jsonDecode(response.body);

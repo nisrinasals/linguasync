@@ -12,9 +12,6 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
     on<FetchMyLanguages>(_onFetchMyLanguages);
     on<EnrollLanguageRequested>(_onEnrollLanguageRequested);
     on<UnenrollLanguageRequested>(_onUnenrollLanguageRequested);
-    on<CreateLanguageRequested>(_onCreateLanguageRequested);
-    on<UpdateLanguageRequested>(_onUpdateLanguageRequested);
-    on<DeleteLanguageRequested>(_onDeleteLanguageRequested);
     on<ResetLanguageData>(_onResetLanguageData);
   }
 
@@ -146,57 +143,6 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
       final message = await languageRepository.unenrollLanguage(
         event.enrollmentId,
       );
-      emit(LanguageOperationSuccess(message: message));
-    } catch (e) {
-      emit(LanguageFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onCreateLanguageRequested(
-    CreateLanguageRequested event,
-    Emitter<LanguageState> emit,
-  ) async {
-    emit(LanguageLoading());
-    try {
-      await languageRepository.createLanguage(event.name, event.description);
-      emit(
-        const LanguageOperationSuccess(
-          message: 'Bahasa baru berhasil ditambahkan.',
-        ),
-      );
-    } catch (e) {
-      emit(LanguageFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onUpdateLanguageRequested(
-    UpdateLanguageRequested event,
-    Emitter<LanguageState> emit,
-  ) async {
-    emit(LanguageLoading());
-    try {
-      await languageRepository.updateLanguage(
-        event.id,
-        event.name,
-        event.description,
-      );
-      emit(
-        const LanguageOperationSuccess(
-          message: 'Informasi bahasa berhasil diperbarui.',
-        ),
-      );
-    } catch (e) {
-      emit(LanguageFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onDeleteLanguageRequested(
-    DeleteLanguageRequested event,
-    Emitter<LanguageState> emit,
-  ) async {
-    emit(LanguageLoading());
-    try {
-      final message = await languageRepository.deleteLanguage(event.id);
       emit(LanguageOperationSuccess(message: message));
     } catch (e) {
       emit(LanguageFailure(error: e.toString().replaceAll('Exception: ', '')));

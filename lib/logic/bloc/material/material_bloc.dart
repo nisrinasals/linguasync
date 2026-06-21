@@ -10,9 +10,6 @@ class MaterialBloc extends Bloc<MaterialEvent, MaterialState> {
   MaterialBloc({required this.materialRepository}) : super(MaterialInitial()) {
     on<FetchMaterials>(_onFetchMaterials);
     on<FetchMaterialDetail>(_onFetchMaterialDetail);
-    on<CreateMaterialRequested>(_onCreateMaterialRequested);
-    on<UpdateMaterialRequested>(_onUpdateMaterialRequested);
-    on<DeleteMaterialRequested>(_onDeleteMaterialRequested);
   }
 
   Future<void> _onFetchMaterials(
@@ -86,63 +83,6 @@ class MaterialBloc extends Bloc<MaterialEvent, MaterialState> {
     try {
       final material = await materialRepository.getMaterialById(event.id);
       emit(MaterialDetailLoaded(material: material));
-    } catch (e) {
-      emit(MaterialFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onCreateMaterialRequested(
-    CreateMaterialRequested event,
-    Emitter<MaterialState> emit,
-  ) async {
-    emit(MaterialLoading());
-    try {
-      await materialRepository.createMaterial(
-        event.languageId,
-        event.title,
-        event.content,
-        event.order,
-      );
-      emit(
-        const MaterialOperationSuccess(
-          message: 'Materi baru berhasil ditambahkan.',
-        ),
-      );
-    } catch (e) {
-      emit(MaterialFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onUpdateMaterialRequested(
-    UpdateMaterialRequested event,
-    Emitter<MaterialState> emit,
-  ) async {
-    emit(MaterialLoading());
-    try {
-      await materialRepository.updateMaterial(
-        event.id,
-        event.title,
-        event.content,
-        event.order,
-      );
-      emit(
-        const MaterialOperationSuccess(
-          message: 'Informasi materi berhasil diperbarui.',
-        ),
-      );
-    } catch (e) {
-      emit(MaterialFailure(error: e.toString().replaceAll('Exception: ', '')));
-    }
-  }
-
-  Future<void> _onDeleteMaterialRequested(
-    DeleteMaterialRequested event,
-    Emitter<MaterialState> emit,
-  ) async {
-    emit(MaterialLoading());
-    try {
-      final message = await materialRepository.deleteMaterial(event.id);
-      emit(MaterialOperationSuccess(message: message));
     } catch (e) {
       emit(MaterialFailure(error: e.toString().replaceAll('Exception: ', '')));
     }
