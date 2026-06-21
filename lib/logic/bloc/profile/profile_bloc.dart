@@ -33,6 +33,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         name: event.name,
         email: event.email,
         password: event.password,
+        oldPassword: event.oldPassword,
         filePath: event.filePath,
       );
       authRepository.handleError(response);

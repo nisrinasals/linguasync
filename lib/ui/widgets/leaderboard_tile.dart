@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/leaderboard_model.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../theme/japandi_theme.dart';
 
 class LeaderboardTile extends StatelessWidget {
@@ -17,6 +19,21 @@ class LeaderboardTile extends StatelessWidget {
   Color _getRankTextColor() {
     if (leaderboard.rank <= 3) return Colors.white;
     return JC.inkMd;
+  }
+
+  Widget _buildAvatar(BuildContext context) {
+    final storageProvider = context.read<AuthRepository>().storageProvider;
+    final hasPhoto = leaderboard.fotoProfile != null && leaderboard.fotoProfile!.isNotEmpty;
+    return CircleAvatar(
+      radius: 18,
+      backgroundColor: JC.primary.withOpacity(0.1),
+      backgroundImage: hasPhoto
+          ? NetworkImage(storageProvider.getProfileImageUrl(leaderboard.fotoProfile))
+          : null,
+      child: !hasPhoto
+          ? const Icon(Icons.person, color: JC.primary, size: 18)
+          : null,
+    );
   }
 
   @override
@@ -46,6 +63,9 @@ class LeaderboardTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
+            // Profile Picture
+            _buildAvatar(context),
+            const SizedBox(width: 12),
             // Name
             Expanded(
               child: Text(

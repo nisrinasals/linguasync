@@ -139,7 +139,7 @@ const authController = {
         });
       }
 
-      const { name, email, password } = req.body;
+      const { name, email, password, old_password } = req.body;
 
       if (email && email !== user.email) {
         const existingEmail = await User.findOne({ where: { email } });
@@ -157,10 +157,23 @@ const authController = {
       }
 
       if (password && password.trim() !== "") {
+        if (!old_password) {
+          return res.status(400).json({
+            status: "fail",
+            message: "Password lama wajib diisi untuk mengubah password.",
+          });
+        }
+        const isOldPasswordValid = await bcrypt.compare(old_password, user.password);
+        if (!isOldPasswordValid) {
+          return res.status(401).json({
+            status: "fail",
+            message: "Password lama yang Anda masukkan salah.",
+          });
+        }
         if (password.length < 6) {
           return res.status(400).json({
             status: "fail",
-            message: "Password harus terdiri dari minimal 6 karakter.",
+            message: "Password baru harus terdiri dari minimal 6 karakter.",
           });
         }
         user.password = await bcrypt.hash(password, 10);

@@ -29,7 +29,7 @@ const leaderboardController = {
         include: [
           {
             model: User,
-            attributes: ["name"],
+            attributes: ["name", "foto_profile"],
           },
         ],
         where: { id: { [Op.in]: sequelize.literal(latestSubquery) } },
@@ -61,6 +61,7 @@ const leaderboardController = {
         rank: offset + index + 1,
         user_id: row.user_id,
         name: row.User.name,
+        foto_profile: row.User.foto_profile,
         totalScore: parseFloat(row.getDataValue("totalScore")) || 0,
       }));
 

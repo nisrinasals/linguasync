@@ -113,6 +113,7 @@ class StorageProvider {
     required String name,
     required String email,
     String? password,
+    String? oldPassword,
     String? filePath,
   }) async {
     final token = await readToken();
@@ -127,6 +128,9 @@ class StorageProvider {
     request.fields['email'] = email;
     if (password != null && password.isNotEmpty) {
       request.fields['password'] = password;
+    }
+    if (oldPassword != null && oldPassword.isNotEmpty) {
+      request.fields['old_password'] = oldPassword;
     }
 
     if (filePath != null && filePath.isNotEmpty) {

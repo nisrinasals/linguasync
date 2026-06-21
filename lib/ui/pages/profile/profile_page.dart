@@ -24,11 +24,11 @@ class _ProfilePageState extends State<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   
   String? _pickedFilePath;
   bool _isInit = false;
   UserModel? _currentUser;
+  bool _isEditing = false;
 
   @override
   void initState() {
@@ -40,7 +40,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -56,6 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal memilih gambar: ${e.toString()}')),
       );
@@ -68,9 +68,6 @@ class _ProfilePageState extends State<ProfilePage> {
         UpdateProfileRequested(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          password: _passwordController.text.isNotEmpty
-              ? _passwordController.text
-              : null,
           filePath: _pickedFilePath,
         ),
       );
@@ -83,6 +80,21 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text('Kelola Profil'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(_isEditing ? Icons.close : Icons.edit),
+            onPressed: () {
+              setState(() {
+                _isEditing = !_isEditing;
+                if (!_isEditing && _currentUser != null) {
+                  _nameController.text = _currentUser!.name;
+                  _emailController.text = _currentUser!.email;
+                  _pickedFilePath = null;
+                }
+              });
+            },
+          ),
+        ],
       ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
@@ -101,10 +113,9 @@ class _ProfilePageState extends State<ProfilePage> {
             );
             // Sinkronkan ke auth bloc global
             context.read<AuthBloc>().add(UserUpdated(user: state.user));
-            // Reset text password & local picked path
-            _passwordController.clear();
             setState(() {
               _pickedFilePath = null;
+              _isEditing = false;
             });
           } else if (state is ProfileFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -162,26 +173,27 @@ class _ProfilePageState extends State<ProfilePage> {
                                   : null,
                             ),
                           ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: InkWell(
-                              onTap: _pickImage,
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: JC.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                  size: 20,
+                          if (_isEditing)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: InkWell(
+                                onTap: _pickImage,
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: JC.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -224,6 +236,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             CustomTextField(
                               controller: _nameController,
                               label: 'Nama Lengkap',
+                              enabled: _isEditing,
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
                                   return 'Nama lengkap wajib diisi.';
@@ -235,6 +248,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             CustomTextField(
                               controller: _emailController,
                               label: 'Alamat Email',
+                              enabled: _isEditing,
                               keyboardType: TextInputType.emailAddress,
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -246,31 +260,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 16),
-                            CustomTextField(
-                              controller: _passwordController,
-                              label: 'Password Baru (Opsional)',
-                              isPassword: true,
-                              hintText: 'Biarkan kosong jika tidak ingin diubah',
-                              validator: (value) {
-                                if (value != null && value.isNotEmpty && value.length < 6) {
-                                  return 'Password minimal 6 karakter.';
-                                }
-                                return null;
-                              },
-                            ),
+
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
 
-                    // Save Button
-                    CustomButton(
-                      text: 'Simpan Perubahan',
-                      isLoading: isSaving,
-                      onPressed: _submitUpdate,
-                    ),
+                    if (_isEditing) ...[
+                      const SizedBox(height: 32),
+                      CustomButton(
+                        text: 'Simpan Perubahan',
+                        isLoading: isSaving,
+                        onPressed: _submitUpdate,
+                      ),
+                    ],
                   ],
                 ),
               ),

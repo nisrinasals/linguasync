@@ -147,8 +147,6 @@ class QuizHistoryDetailPage extends StatelessWidget {
                       _buildRow(Icons.calendar_today_outlined, 'Tanggal Pengerjaan',
                           _formatDateTime(history.createdAt)),
                       const Divider(height: 24),
-                      _buildRow(Icons.tag, 'ID Riwayat', '#${history.id}'),
-                      const Divider(height: 24),
                       _buildRow(
                         isPassed ? Icons.verified_outlined : Icons.close_rounded,
                         'Status',

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/bloc/admin_user/admin_user_bloc.dart';
 import '../../../logic/bloc/admin_user/admin_user_event.dart';
 import '../../../logic/bloc/admin_user/admin_user_state.dart';
+import '../../../logic/bloc/auth/auth_bloc.dart';
+import '../../../logic/bloc/auth/auth_state.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../theme/japandi_theme.dart';
@@ -111,6 +113,8 @@ class _AdminManageUserPageState extends State<AdminManageUserPage> {
   @override
   Widget build(BuildContext context) {
     final storageProvider = context.read<AuthRepository>().storageProvider;
+    final authState = context.watch<AuthBloc>().state;
+    final currentUserId = authState is Authenticated ? authState.user.id : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -289,10 +293,11 @@ class _AdminManageUserPageState extends State<AdminManageUserPage> {
                                     );
                                   },
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: JC.error),
-                                  onPressed: () => _confirmDelete(user.id, user.name),
-                                ),
+                                if (user.id != currentUserId)
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: JC.error),
+                                    onPressed: () => _confirmDelete(user.id, user.name),
+                                  ),
                               ],
                             ),
                           ),

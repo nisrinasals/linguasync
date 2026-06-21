@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
 import '../../../logic/bloc/auth/auth_event.dart';
+import '../../../logic/bloc/auth/auth_state.dart';
 import 'admin_manage_language_page.dart';
 import 'admin_manage_user_page.dart';
 import 'admin_manage_history_page.dart';
@@ -11,6 +12,9 @@ class AdminDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final adminName = authState is Authenticated ? authState.user.name : 'Administrator';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard Admin'),
@@ -66,12 +70,12 @@ class AdminDashboardPage extends StatelessWidget {
                 color: const Color(0xFF2C3E50),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Halo, Administrator',
-                    style: TextStyle(
+                    'Halo, $adminName',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,

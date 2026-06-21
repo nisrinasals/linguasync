@@ -9,6 +9,7 @@ class CustomTextField extends StatefulWidget {
   final int maxLines;
   final TextInputType keyboardType;
   final String? hintText;
+  final bool enabled;
 
   const CustomTextField({
     super.key,
@@ -19,6 +20,7 @@ class CustomTextField extends StatefulWidget {
     this.maxLines = 1,
     this.keyboardType = TextInputType.text,
     this.hintText,
+    this.enabled = true,
   });
 
   @override
@@ -32,6 +34,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
+      enabled: widget.enabled,
       validator: widget.validator,
       obscureText: widget.isPassword ? _obscureText : false,
       maxLines: widget.isPassword ? 1 : widget.maxLines,
