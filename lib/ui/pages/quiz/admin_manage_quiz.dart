@@ -22,6 +22,7 @@ class AdminManageQuizPage extends StatefulWidget {
 
 class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -45,10 +47,24 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
       final state = BlocProvider.of<QuizBloc>(context).state;
       if (state is QuizAdminListLoaded && !state.hasReachedMax) {
         BlocProvider.of<QuizBloc>(context).add(
-          FetchAdminQuizzes(languageId: widget.languageId, isRefresh: false),
+          FetchAdminQuizzes(
+            languageId: widget.languageId,
+            search: _searchController.text.trim(),
+            isRefresh: false,
+          ),
         );
       }
     }
+  }
+
+  void _onSearchChanged(String query) {
+    BlocProvider.of<QuizBloc>(context).add(
+      FetchAdminQuizzes(
+        languageId: widget.languageId,
+        search: query.trim(),
+        isRefresh: true,
+      ),
+    );
   }
 
   void _confirmDelete(int id) {
@@ -101,7 +117,11 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
             BlocProvider.of<QuizBloc>(context).add(
-              FetchAdminQuizzes(languageId: widget.languageId, isRefresh: true),
+              FetchAdminQuizzes(
+                languageId: widget.languageId,
+                search: _searchController.text.trim(),
+                isRefresh: true,
+              ),
             );
           } else if (state is QuizFailure) {
             ScaffoldMessenger.of(
@@ -109,92 +129,126 @@ class _AdminManageQuizPageState extends State<AdminManageQuizPage> {
             ).showSnackBar(SnackBar(content: Text(state.error)));
           }
         },
-        child: BlocBuilder<QuizBloc, QuizState>(
-          builder: (context, state) {
-            if (state is QuizLoading) {
-              return ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) => const ShimmerLoading(),
-              );
-            }
-
-            if (state is QuizAdminListLoaded) {
-              if (state.questions.isEmpty) {
-                return const Center(
-                  child: Text(
-                    'Belum ada soal kuis terdaftar untuk bahasa ini.',
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Cari soal kuis...',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
                   ),
-                );
-              }
-
-              return ListView.builder(
-                controller: _scrollController,
-                itemCount: state.hasReachedMax
-                    ? state.questions.length
-                    : state.questions.length + 1,
-                itemBuilder: (context, index) {
-                  if (index >= state.questions.length) {
-                    return const ShimmerLoading();
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<QuizBloc, QuizState>(
+                builder: (context, state) {
+                  if (state is QuizLoading) {
+                    return ListView.builder(
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const ShimmerLoading(),
+                    );
                   }
 
-                  final quiz = state.questions[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 6,
-                      horizontal: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      title: Text(
-                        quiz.question,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: Text(
-                          'Kunci Jawaban: Opsi ${quiz.answer.toUpperCase()}',
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.orange),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => QuizFormPage(
-                                    languageId: widget.languageId,
-                                    quiz: quiz,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _confirmDelete(quiz.id),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            }
+                  if (state is QuizAdminListLoaded) {
+                    if (state.questions.isEmpty) {
+                      return const Center(
+                        child: Text('Tidak ada soal kuis ditemukan.'),
+                      );
+                    }
 
-            return const SizedBox();
-          },
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: state.hasReachedMax
+                          ? state.questions.length
+                          : state.questions.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index >= state.questions.length) {
+                          return const ShimmerLoading();
+                        }
+
+                        final quiz = state.questions[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(12),
+                            title: Text(
+                              quiz.question,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 6.0),
+                              child: Text(
+                                'Kunci Jawaban: Opsi ${quiz.answer.toUpperCase()}',
+                                style: const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.orange,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => QuizFormPage(
+                                          languageId: widget.languageId,
+                                          quiz: quiz,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () => _confirmDelete(quiz.id),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
