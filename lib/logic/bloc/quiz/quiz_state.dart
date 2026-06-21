@@ -40,7 +40,12 @@ class QuizQuestionActive extends QuizState {
   }
 
   @override
-  List<Object?> get props => [questions, currentIndex, remainingSeconds, correctAnswersCount];
+  List<Object?> get props => [
+    questions,
+    currentIndex,
+    remainingSeconds,
+    correctAnswersCount,
+  ];
 }
 
 class QuizFinished extends QuizState {
@@ -63,12 +68,14 @@ class QuizAdminListLoaded extends QuizState {
   final int currentPage;
   final bool hasReachedMax;
   final int languageId;
+  final String search;
 
   const QuizAdminListLoaded({
     required this.questions,
     required this.currentPage,
     required this.hasReachedMax,
     required this.languageId,
+    this.search = '',
   });
 
   QuizAdminListLoaded copyWith({
@@ -76,17 +83,25 @@ class QuizAdminListLoaded extends QuizState {
     int? currentPage,
     bool? hasReachedMax,
     int? languageId,
+    String? search,
   }) {
     return QuizAdminListLoaded(
       questions: questions ?? this.questions,
       currentPage: currentPage ?? this.currentPage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       languageId: languageId ?? this.languageId,
+      search: search ?? this.search,
     );
   }
 
   @override
-  List<Object?> get props => [questions, currentPage, hasReachedMax, languageId];
+  List<Object?> get props => [
+    questions,
+    currentPage,
+    hasReachedMax,
+    languageId,
+    search,
+  ];
 }
 
 class QuizOperationSuccess extends QuizState {

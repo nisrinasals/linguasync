@@ -24,16 +24,22 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   Future<void> _onStartQuiz(StartQuiz event, Emitter<QuizState> emit) async {
     emit(QuizLoading());
     try {
-      final questions = await quizRepository.getQuestionsByLanguage(event.languageId);
+      final questions = await quizRepository.getQuestionsByLanguage(
+        event.languageId,
+      );
       if (questions.isEmpty) {
-        emit(const QuizFinished(score: 0.0, totalQuestions: 0, correctAnswers: 0));
+        emit(
+          const QuizFinished(score: 0.0, totalQuestions: 0, correctAnswers: 0),
+        );
       } else {
-        emit(QuizQuestionActive(
-          questions: questions,
-          currentIndex: 0,
-          remainingSeconds: 5,
-          correctAnswersCount: 0,
-        ));
+        emit(
+          QuizQuestionActive(
+            questions: questions,
+            currentIndex: 0,
+            remainingSeconds: 5,
+            correctAnswersCount: 0,
+          ),
+        );
         _startTimer();
       }
     } catch (e) {
@@ -59,112 +65,158 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       final currentQuestion = currentState.questions[currentState.currentIndex];
       int correctCount = currentState.correctAnswersCount;
 
-      if (currentQuestion.answer.toUpperCase() == event.selectedOption.toUpperCase()) {
+      if (currentQuestion.answer.toUpperCase() ==
+          event.selectedOption.toUpperCase()) {
         correctCount++;
       }
 
       final nextIndex = currentState.currentIndex + 1;
       if (nextIndex < currentState.questions.length) {
-        emit(QuizQuestionActive(
-          questions: currentState.questions,
-          currentIndex: nextIndex,
-          remainingSeconds: 5,
-          correctAnswersCount: correctCount,
-        ));
+        emit(
+          QuizQuestionActive(
+            questions: currentState.questions,
+            currentIndex: nextIndex,
+            remainingSeconds: 5,
+            correctAnswersCount: correctCount,
+          ),
+        );
         _startTimer();
       } else {
         final total = currentState.questions.length;
         final score = (correctCount / total) * 100.0;
-        emit(QuizFinished(
-          score: score,
-          totalQuestions: total,
-          correctAnswers: correctCount,
-        ));
+        emit(
+          QuizFinished(
+            score: score,
+            totalQuestions: total,
+            correctAnswers: correctCount,
+          ),
+        );
       }
     }
   }
 
-  void _moveToNextQuestion(QuizQuestionActive currentState, Emitter<QuizState> emit) {
+  void _moveToNextQuestion(
+    QuizQuestionActive currentState,
+    Emitter<QuizState> emit,
+  ) {
     final nextIndex = currentState.currentIndex + 1;
     if (nextIndex < currentState.questions.length) {
-      emit(QuizQuestionActive(
-        questions: currentState.questions,
-        currentIndex: nextIndex,
-        remainingSeconds: 5,
-        correctAnswersCount: currentState.correctAnswersCount,
-      ));
+      emit(
+        QuizQuestionActive(
+          questions: currentState.questions,
+          currentIndex: nextIndex,
+          remainingSeconds: 5,
+          correctAnswersCount: currentState.correctAnswersCount,
+        ),
+      );
       _startTimer();
     } else {
       _timerSubscription?.cancel();
       final total = currentState.questions.length;
       final score = (currentState.correctAnswersCount / total) * 100.0;
-      emit(QuizFinished(
-        score: score,
-        totalQuestions: total,
-        correctAnswers: currentState.correctAnswersCount,
-      ));
+      emit(
+        QuizFinished(
+          score: score,
+          totalQuestions: total,
+          correctAnswers: currentState.correctAnswersCount,
+        ),
+      );
     }
   }
 
   void _startTimer() {
     _timerSubscription?.cancel();
-    _timerSubscription = Stream.periodic(const Duration(seconds: 1), (x) => 4 - x)
-        .take(5)
-        .listen((remaining) {
-      add(QuizTimerTicked(duration: remaining));
-    });
+    _timerSubscription =
+        Stream.periodic(
+          const Duration(seconds: 1),
+          (x) => 4 - x,
+        ).take(5).listen((remaining) {
+          add(QuizTimerTicked(duration: remaining));
+        });
   }
 
-  Future<void> _onSubmitQuizResultRequested(SubmitQuizResultRequested event, Emitter<QuizState> emit) async {
+  Future<void> _onSubmitQuizResultRequested(
+    SubmitQuizResultRequested event,
+    Emitter<QuizState> emit,
+  ) async {
     emit(QuizLoading());
     try {
-      final message = await quizRepository.submitQuizResult(event.languageId, event.score);
+      final message = await quizRepository.submitQuizResult(
+        event.languageId,
+        event.score,
+      );
       emit(QuizOperationSuccess(message: message));
     } catch (e) {
       emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
     }
   }
 
-  Future<void> _onFetchAdminQuizzes(FetchAdminQuizzes event, Emitter<QuizState> emit) async {
+  Future<void> _onFetchAdminQuizzes(
+    FetchAdminQuizzes event,
+    Emitter<QuizState> emit,
+  ) async {
     final currentState = state;
 
-    if (!event.isRefresh && currentState is QuizAdminListLoaded) {
-      if (currentState.languageId == event.languageId && currentState.hasReachedMax) return;
+    bool shouldReset =
+        event.isRefresh ||
+        (currentState is QuizAdminListLoaded &&
+            currentState.search != event.search);
+
+    if (!shouldReset && currentState is QuizAdminListLoaded) {
+      if (currentState.languageId == event.languageId &&
+          currentState.hasReachedMax)
+        return;
 
       try {
         final pageToFetch = currentState.currentPage + 1;
-        final result = await quizRepository.adminGetQuestions(event.languageId, pageToFetch);
+        final result = await quizRepository.adminGetQuestions(
+          event.languageId,
+          pageToFetch,
+          search: currentState.search,
+        );
         final questions = result['data'] as List<QuizModel>;
         final totalPages = result['totalPages'] as int;
 
-        emit(currentState.copyWith(
-          questions: List.of(currentState.questions)..addAll(questions),
-          currentPage: pageToFetch,
-          hasReachedMax: pageToFetch >= totalPages,
-        ));
+        emit(
+          currentState.copyWith(
+            questions: List.of(currentState.questions)..addAll(questions),
+            currentPage: pageToFetch,
+            hasReachedMax: pageToFetch >= totalPages,
+          ),
+        );
       } catch (e) {
         emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
       }
     } else {
       emit(QuizLoading());
       try {
-        final result = await quizRepository.adminGetQuestions(event.languageId, 1);
+        final result = await quizRepository.adminGetQuestions(
+          event.languageId,
+          1,
+          search: event.search,
+        );
         final questions = result['data'] as List<QuizModel>;
         final totalPages = result['totalPages'] as int;
 
-        emit(QuizAdminListLoaded(
-          questions: questions,
-          currentPage: 1,
-          hasReachedMax: 1 >= totalPages,
-          languageId: event.languageId,
-        ));
+        emit(
+          QuizAdminListLoaded(
+            questions: questions,
+            currentPage: 1,
+            hasReachedMax: 1 >= totalPages,
+            languageId: event.languageId,
+            search: event.search,
+          ),
+        );
       } catch (e) {
         emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
       }
     }
   }
 
-  Future<void> _onCreateQuizQuestionRequested(CreateQuizQuestionRequested event, Emitter<QuizState> emit) async {
+  Future<void> _onCreateQuizQuestionRequested(
+    CreateQuizQuestionRequested event,
+    Emitter<QuizState> emit,
+  ) async {
     emit(QuizLoading());
     final optA = event.optA.trim().toLowerCase();
     final optB = event.optB.trim().toLowerCase();
@@ -173,7 +225,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
     final uniqueOptions = {optA, optB, optC, optD};
     if (uniqueOptions.length < 4) {
-      emit(const QuizFailure(error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.'));
+      emit(
+        const QuizFailure(
+          error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.',
+        ),
+      );
       return;
     }
 
@@ -187,13 +243,20 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         event.optD,
         event.answer,
       );
-      emit(const QuizOperationSuccess(message: 'Pertanyaan kuis baru berhasil ditambahkan.'));
+      emit(
+        const QuizOperationSuccess(
+          message: 'Pertanyaan kuis baru berhasil ditambahkan.',
+        ),
+      );
     } catch (e) {
       emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
     }
   }
 
-  Future<void> _onUpdateQuizQuestionRequested(UpdateQuizQuestionRequested event, Emitter<QuizState> emit) async {
+  Future<void> _onUpdateQuizQuestionRequested(
+    UpdateQuizQuestionRequested event,
+    Emitter<QuizState> emit,
+  ) async {
     emit(QuizLoading());
     final optA = event.optA.trim().toLowerCase();
     final optB = event.optB.trim().toLowerCase();
@@ -202,7 +265,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
     final uniqueOptions = {optA, optB, optC, optD};
     if (uniqueOptions.length < 4) {
-      emit(const QuizFailure(error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.'));
+      emit(
+        const QuizFailure(
+          error: 'Pilihan opsi jawaban (A, B, C, D) tidak boleh ada yang sama.',
+        ),
+      );
       return;
     }
 
@@ -216,13 +283,20 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         event.optD,
         event.answer,
       );
-      emit(const QuizOperationSuccess(message: 'Pertanyaan kuis berhasil diperbarui.'));
+      emit(
+        const QuizOperationSuccess(
+          message: 'Pertanyaan kuis berhasil diperbarui.',
+        ),
+      );
     } catch (e) {
       emit(QuizFailure(error: e.toString().replaceAll('Exception: ', '')));
     }
   }
 
-  Future<void> _onDeleteQuizQuestionRequested(DeleteQuizQuestionRequested event, Emitter<QuizState> emit) async {
+  Future<void> _onDeleteQuizQuestionRequested(
+    DeleteQuizQuestionRequested event,
+    Emitter<QuizState> emit,
+  ) async {
     emit(QuizLoading());
     try {
       final message = await quizRepository.adminDeleteQuestion(event.id);

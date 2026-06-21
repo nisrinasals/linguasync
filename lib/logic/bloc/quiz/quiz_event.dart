@@ -38,7 +38,10 @@ class SubmitQuizResultRequested extends QuizEvent {
   final int languageId;
   final double score;
 
-  const SubmitQuizResultRequested({required this.languageId, required this.score});
+  const SubmitQuizResultRequested({
+    required this.languageId,
+    required this.score,
+  });
 
   @override
   List<Object?> get props => [languageId, score];
@@ -47,11 +50,16 @@ class SubmitQuizResultRequested extends QuizEvent {
 class FetchAdminQuizzes extends QuizEvent {
   final int languageId;
   final bool isRefresh;
+  final String search;
 
-  const FetchAdminQuizzes({required this.languageId, this.isRefresh = false});
+  const FetchAdminQuizzes({
+    required this.languageId,
+    this.isRefresh = false,
+    this.search = '',
+  });
 
   @override
-  List<Object?> get props => [languageId, isRefresh];
+  List<Object?> get props => [languageId, isRefresh, search];
 }
 
 class CreateQuizQuestionRequested extends QuizEvent {
@@ -74,7 +82,15 @@ class CreateQuizQuestionRequested extends QuizEvent {
   });
 
   @override
-  List<Object?> get props => [languageId, question, optA, optB, optC, optD, answer];
+  List<Object?> get props => [
+    languageId,
+    question,
+    optA,
+    optB,
+    optC,
+    optD,
+    answer,
+  ];
 }
 
 class UpdateQuizQuestionRequested extends QuizEvent {
