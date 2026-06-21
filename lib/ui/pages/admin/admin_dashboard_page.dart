@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:linguasync/logic/bloc/auth/auth_bloc.dart';
 import '../../../logic/bloc/auth/auth_event.dart';
 import '../../../logic/bloc/auth/auth_state.dart';
+import '../../theme/japandi_theme.dart';
 import 'admin_manage_language_page.dart';
 import 'admin_manage_user_page.dart';
 import 'admin_manage_history_page.dart';
@@ -13,7 +14,9 @@ class AdminDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
-    final adminName = authState is Authenticated ? authState.user.name : 'Administrator';
+    final adminName = authState is Authenticated
+        ? authState.user.name
+        : 'Administrator';
 
     return Scaffold(
       appBar: AppBar(
@@ -47,7 +50,7 @@ class AdminDashboardPage extends StatelessWidget {
                         },
                         child: const Text(
                           'Logout',
-                          style: TextStyle(color: Colors.red),
+                          style: TextStyle(color: JC.error),
                         ),
                       ),
                     ],
@@ -67,7 +70,7 @@ class AdminDashboardPage extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF2C3E50),
+                color: JC.primary,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -75,15 +78,14 @@ class AdminDashboardPage extends StatelessWidget {
                 children: [
                   Text(
                     'Halo, $adminName',
-                    style: const TextStyle(
+                    style: JT.titleLg.copyWith(
                       color: Colors.white,
                       fontSize: 22,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    'Selamat datang kembali di pusat kendali konten aplikasi pembelajaran LinguaSync.',
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Selamat datang kembali!',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -96,14 +98,10 @@ class AdminDashboardPage extends StatelessWidget {
             const SizedBox(height: 32),
             const Text(
               'Menu Manajemen Utama',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2C3E50),
-              ),
+              style: JT.titleMd,
             ),
             const SizedBox(height: 16),
-            
+
             // Card 1: Kelola Bahasa
             InkWell(
               onTap: () {
@@ -118,14 +116,14 @@ class AdminDashboardPage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: JC.bgCard,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: JC.border),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withOpacity(0.01),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -134,12 +132,12 @@ class AdminDashboardPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2C3E50).withOpacity(0.1),
+                        color: JC.primarySfc,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.dns,
-                        color: Color(0xFF2C3E50),
+                        color: JC.primary,
                         size: 28,
                       ),
                     ),
@@ -150,19 +148,12 @@ class AdminDashboardPage extends StatelessWidget {
                         children: [
                           Text(
                             'Kelola Ekosistem Bahasa',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2C3E50),
-                            ),
+                            style: JT.titleMd,
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Pusat kendali CRUD Bahasa, Materi Teks bab, beserta Bank Soal Evaluasi Kuis.',
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 12,
-                            ),
+                            style: JT.bodySm,
                           ),
                         ],
                       ),
@@ -170,7 +161,7 @@ class AdminDashboardPage extends StatelessWidget {
                     const Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
-                      color: Colors.black38,
+                      color: JC.inkLt,
                     ),
                   ],
                 ),
@@ -192,14 +183,14 @@ class AdminDashboardPage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: JC.bgCard,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: JC.border),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withOpacity(0.01),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -208,12 +199,12 @@ class AdminDashboardPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2C3E50).withOpacity(0.1),
+                        color: JC.primarySfc,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.people,
-                        color: Color(0xFF2C3E50),
+                        color: JC.primary,
                         size: 28,
                       ),
                     ),
@@ -224,19 +215,12 @@ class AdminDashboardPage extends StatelessWidget {
                         children: [
                           Text(
                             'Kelola Pengguna',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2C3E50),
-                            ),
+                            style: JT.titleMd,
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Pusat kendali CRUD Akun Pengguna / Siswa dan penugasan wewenang admin.',
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 12,
-                            ),
+                            style: JT.bodySm,
                           ),
                         ],
                       ),
@@ -244,7 +228,7 @@ class AdminDashboardPage extends StatelessWidget {
                     const Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
-                      color: Colors.black38,
+                      color: JC.inkLt,
                     ),
                   ],
                 ),
@@ -266,14 +250,14 @@ class AdminDashboardPage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: JC.bgCard,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: JC.border),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withOpacity(0.01),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -282,12 +266,12 @@ class AdminDashboardPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2C3E50).withOpacity(0.1),
+                        color: JC.primarySfc,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.history_edu,
-                        color: Color(0xFF2C3E50),
+                        color: JC.primary,
                         size: 28,
                       ),
                     ),
@@ -298,19 +282,12 @@ class AdminDashboardPage extends StatelessWidget {
                         children: [
                           Text(
                             'Kelola Riwayat Kuis',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2C3E50),
-                            ),
+                            style: JT.titleMd,
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Pusat kendali CRUD Riwayat Kuis siswa dan penyesuaian nilai hasil belajar.',
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 12,
-                            ),
+                            style: JT.bodySm,
                           ),
                         ],
                       ),
@@ -318,7 +295,7 @@ class AdminDashboardPage extends StatelessWidget {
                     const Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
-                      color: Colors.black38,
+                      color: JC.inkLt,
                     ),
                   ],
                 ),

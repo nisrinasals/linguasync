@@ -47,5 +47,7 @@ app.*.map.json
 
 backend/node_modules
 backend/.env
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 REVISI.txt

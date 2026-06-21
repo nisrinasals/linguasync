@@ -4,6 +4,7 @@ import '../../../../data/models/language_model.dart';
 import '../../../../logic/bloc/language/language_bloc.dart';
 import '../../../../logic/bloc/language/language_event.dart';
 import '../../../../logic/bloc/language/language_state.dart';
+import '../../theme/japandi_theme.dart';
 
 class DetailLanguagePage extends StatefulWidget {
   final LanguageModel language;
@@ -60,7 +61,7 @@ class _DetailLanguagePageState extends State<DetailLanguagePage> {
                 UnenrollLanguageRequested(enrollmentId: widget.language.id),
               );
             },
-            child: const Text('Keluar', style: TextStyle(color: Colors.red)),
+            child: const Text('Keluar', style: TextStyle(color: JC.error)),
           ),
         ],
       ),
@@ -76,10 +77,6 @@ class _DetailLanguagePageState extends State<DetailLanguagePage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primaryColor = theme.primaryColor;
-
-    // PopScope mengunci navigasi back jika _isLoading true
     return PopScope(
       canPop: !_isLoading,
       onPopInvokedWithResult: (didPop, result) {
@@ -92,7 +89,7 @@ class _DetailLanguagePageState extends State<DetailLanguagePage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(widget.language.name), centerTitle: true),
+        appBar: AppBar(title: Text(widget.language.name)),
         body: SafeArea(
           child: BlocListener<LanguageBloc, LanguageState>(
             listener: (context, state) {
@@ -111,24 +108,20 @@ class _DetailLanguagePageState extends State<DetailLanguagePage> {
                   Container(
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
-                      color: primaryColor,
-                      borderRadius: BorderRadius.circular(24.0),
+                      color: JC.primary,
+                      borderRadius: BorderRadius.circular(16.0),
                     ),
                     child: Column(
                       children: [
                         const Icon(
                           Icons.translate,
-                          size: 50,
+                          size: 48,
                           color: Colors.white,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           widget.language.name,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: JT.titleLg.copyWith(color: Colors.white, fontSize: 22),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -141,17 +134,14 @@ class _DetailLanguagePageState extends State<DetailLanguagePage> {
                   const SizedBox(height: 24),
                   const Text(
                     'Deskripsi Bahasa',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: JT.titleMd,
                   ),
                   const SizedBox(height: 12),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Text(
                         widget.language.description,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade700,
-                        ),
+                        style: JT.body.copyWith(color: JC.inkMd),
                       ),
                     ),
                   ),
@@ -163,11 +153,11 @@ class _DetailLanguagePageState extends State<DetailLanguagePage> {
                         : (_isEnrolled ? _confirmUnenroll : _enroll),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _isEnrolled
-                          ? Colors.red.shade400
-                          : primaryColor,
+                          ? JC.error
+                          : JC.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     child: _isLoading
