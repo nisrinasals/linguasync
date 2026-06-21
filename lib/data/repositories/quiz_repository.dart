@@ -9,7 +9,9 @@ class QuizRepository extends BaseRepository {
   QuizRepository({required this.storageProvider});
 
   Future<List<QuizModel>> getQuestionsByLanguage(int languageId) async {
-    final response = await storageProvider.get('/quizzes?language_id=$languageId');
+    final response = await storageProvider.get(
+      '/quizzes?language_id=$languageId',
+    );
     handleError(response);
     final body = jsonDecode(response.body);
     final List<dynamic> rawList = body['data'];
@@ -26,8 +28,14 @@ class QuizRepository extends BaseRepository {
     return body['message'] ?? 'Hasil kuis berhasil disimpan.';
   }
 
-  Future<Map<String, dynamic>> adminGetQuestions(int languageId, int page) async {
-    final response = await storageProvider.get('/quizzes/admin?language_id=$languageId&page=$page&limit=10');
+  Future<Map<String, dynamic>> adminGetQuestions(
+    int languageId,
+    int page, {
+    String search = '',
+  }) async {
+    final response = await storageProvider.get(
+      '/quizzes/admin?language_id=$languageId&page=$page&limit=10&search=$search',
+    );
     handleError(response);
     final body = jsonDecode(response.body);
     final List<dynamic> rawList = body['data'];
@@ -39,7 +47,15 @@ class QuizRepository extends BaseRepository {
     };
   }
 
-  Future<QuizModel> adminCreateQuestion(int languageId, String question, String optA, String optB, String optC, String optD, String answer) async {
+  Future<QuizModel> adminCreateQuestion(
+    int languageId,
+    String question,
+    String optA,
+    String optB,
+    String optC,
+    String optD,
+    String answer,
+  ) async {
     final response = await storageProvider.post('/quizzes/admin', {
       'language_id': languageId,
       'question': question,
@@ -54,7 +70,15 @@ class QuizRepository extends BaseRepository {
     return QuizModel.fromJson(body['data']);
   }
 
-  Future<QuizModel> adminUpdateQuestion(int id, String question, String optA, String optB, String optC, String optD, String answer) async {
+  Future<QuizModel> adminUpdateQuestion(
+    int id,
+    String question,
+    String optA,
+    String optB,
+    String optC,
+    String optD,
+    String answer,
+  ) async {
     final response = await storageProvider.put('/quizzes/admin/$id', {
       'question': question,
       'opt_a': optA,

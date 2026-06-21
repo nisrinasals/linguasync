@@ -25,7 +25,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat pertanyaan kuis.",
-        });
+      });
     }
   },
 
@@ -64,13 +64,14 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal menyimpan hasil kuis ke database.",
-        });
+      });
     }
   },
 
   adminGetQuestions: async (req, res) => {
     try {
       const { language_id } = req.query;
+      const search = req.query.search || "";
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
@@ -82,8 +83,15 @@ const quizController = {
         });
       }
 
+      const { Op } = require("sequelize");
+      const whereClause = { language_id };
+
+      if (search) {
+        whereClause.question = { [Op.like]: `%${search}%` };
+      }
+
       const { count, rows } = await Quiz.findAndCountAll({
-        where: { language_id },
+        where: whereClause,
         limit,
         offset,
         order: [["id", "ASC"]],
@@ -101,7 +109,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memuat bank soal kuis.",
-        });
+      });
     }
   },
 
@@ -143,7 +151,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal menambahkan pertanyaan kuis.",
-        });
+      });
     }
   },
 
@@ -162,14 +170,17 @@ const quizController = {
         });
       }
 
-      await quizQuestion.update({ 
-        question, 
-        option_a: opt_a, 
-        option_b: opt_b, 
-        option_c: opt_c, 
-        option_d: opt_d, 
-        correct_answer: answer.toLowerCase()
-      }, { transaction: t });
+      await quizQuestion.update(
+        {
+          question,
+          option_a: opt_a,
+          option_b: opt_b,
+          option_c: opt_c,
+          option_d: opt_d,
+          correct_answer: answer.toLowerCase(),
+        },
+        { transaction: t },
+      );
       await t.commit();
       return res.status(200).json({
         status: "success",
@@ -181,7 +192,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memperbarui data kuis.",
-        });
+      });
     }
   },
 
@@ -210,7 +221,7 @@ const quizController = {
       return res.status(500).json({
         status: "error",
         message: "Gagal memproses penghapusan data kuis.",
-        });
+      });
     }
   },
 };
